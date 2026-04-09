@@ -1,65 +1,83 @@
-import Image from "next/image";
+'use client';
+
+import styles from "./page.module.css";
+import { useAuth } from "@/components/features/AuthProvider";
+import { Button } from "@/components/ui/Button";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { Shield, Zap, Target } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
+  const { tgUser, loading, user } = useAuth();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className={styles.main}>
+      <div className={styles.hero}>
+        <h1 className="text-gold" style={{ fontSize: '3.5rem', fontWeight: 800, letterSpacing: '-2px' }}>
+          NEXUS
+        </h1>
+        <p style={{ color: 'var(--secondary-foreground)', marginBottom: '2.5rem', fontSize: '1.1rem', fontWeight: 300 }}>
+          Социальная архитектура нового поколения
+        </p>
+
+        <div className={styles.authSection}>
+          {loading ? (
+            <div className="radar-pulse" style={{ 
+              width: '80px', 
+              height: '80px', 
+              borderRadius: '50%', 
+              border: '2px solid var(--accent)', 
+              margin: '2rem auto' 
+            }}></div>
+          ) : tgUser ? (
+            <div style={{ width: '100%', maxWidth: '320px', margin: '0 auto' }}>
+              <p style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>
+                Добро пожаловать, <span className="text-gold">@{tgUser.username || tgUser.first_name}</span>
+              </p>
+              {!user ? (
+                <Link href="/induction" style={{ width: '100%' }}>
+                  <Button variant="primary">
+                    Начать Индукцию <Zap size={18} />
+                  </Button>
+                </Link>
+              ) : (
+                <Button variant="glass">
+                  Открыть Досье <Shield size={18} />
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div style={{ width: '100%', maxWidth: '320px', margin: '0 auto' }}>
+              <p style={{ color: 'rgba(255, 77, 77, 0.8)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                Вход только для авторизованных Агентов
+              </p>
+              <Button variant="primary">
+                Войти через Telegram
+              </Button>
+            </div>
+          )}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </div>
+
+      <div className={styles.grid}>
+        <GlassCard 
+          title="Индукция" 
+          description="Мгновенное определение вашего Human OS кода."
+        >
+          <Target className="text-gold" style={{ marginTop: '1rem' }} />
+        </GlassCard>
+        
+        <GlassCard 
+          title="Синхрон" 
+          description="Анализ совместимости с эффективностью 32х."
+        >
+          <Zap className="text-gold" style={{ marginTop: '1rem' }} />
+        </GlassCard>
+      </div>
+
+      <footer style={{ marginTop: '4rem', opacity: 0.3, fontSize: '0.7rem' }}>
+        SHADOW CODE SYSTEM // VER 1.1 // INDUCTION PROTOCOL
+      </footer>
+    </main>
   );
 }
