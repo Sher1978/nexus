@@ -76,7 +76,9 @@ export const QuickTest = ({ onComplete }: { onComplete: (code: string) => void }
       </div>
 
       <GlassCard>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', textAlign: 'center' }}>{currentDilemma.title}</h2>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', textAlign: 'center', fontWeight: 700, color: 'white' }}>
+          {currentDilemma.title}
+        </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {currentDilemma.options.map((opt) => (
             <button
@@ -84,28 +86,41 @@ export const QuickTest = ({ onComplete }: { onComplete: (code: string) => void }
               onClick={() => handleSelect(opt.value)}
               className="glass"
               style={{
-                padding: '1.5rem',
+                padding: '1.2rem',
                 textAlign: 'left',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '1rem',
-                transition: 'all 0.2s ease',
-                background: 'rgba(255,255,255,0.03)',
-                borderColor: 'rgba(255,255,255,0.05)'
+                gap: '1.2rem',
+                transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '20px'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(212, 175, 55, 0.05)';
-                e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.2)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                e.currentTarget.style.transform = 'scale(1.02)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
+                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              <span style={{ fontSize: '1.5rem' }}>{opt.icon}</span>
-              <span style={{ fontWeight: 500 }}>{opt.label}</span>
-              <ArrowRight size={16} style={{ marginLeft: 'auto', opacity: 0.3 }} />
+              <div style={{ 
+                fontSize: '1.8rem', 
+                filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.2))' 
+              }}>
+                {opt.icon}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+                <span style={{ fontWeight: 600, color: 'white', fontSize: '1rem' }}>{opt.label}</span>
+                <span style={{ fontSize: '0.75rem', opacity: 0.5, color: 'var(--ios-silver)' }}>
+                  Протокол: {opt.value}
+                </span>
+              </div>
+              <ArrowRight size={20} style={{ marginLeft: 'auto', opacity: 0.4, color: 'white' }} />
             </button>
           ))}
         </div>

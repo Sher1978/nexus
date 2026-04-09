@@ -58,55 +58,49 @@ export const InductionResult = ({ code, onBack }: { code: string, onBack: () => 
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: '440px', padding: '1rem' }}>
+    <div style={{ width: '100%', maxWidth: '440px', padding: '1.5rem' }}>
       {/* Scanning Header */}
       <div style={{ textAlign: 'center', marginBottom: '3rem', position: 'relative' }}>
         <div className="aura-pulse" style={{ 
-          width: '140px', 
-          height: '140px', 
+          width: '120px', 
+          height: '120px', 
           borderRadius: '50%', 
-          border: '1px solid rgba(212, 175, 55, 0.3)', 
+          border: '1px solid rgba(255, 255, 255, 0.1)', 
           margin: '0 auto 1.5rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%)',
-          position: 'relative'
+          background: 'radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 70%)',
+          position: 'relative',
+          boxShadow: '0 0 30px rgba(255,215,0,0.05)'
         }}>
-          <div className="scanning" style={{
-            position: 'absolute',
-            width: '100%',
-            height: '2px',
-            background: 'var(--gold)',
-            zIndex: 10
-          }} />
           {isSaved ? (
-            <CheckCircle2 size={64} className="text-gold" />
+            <CheckCircle2 size={56} className="text-gold" />
           ) : (
-            <Shield size={56} className="text-gold" style={{ filter: 'drop-shadow(0 0 10px rgba(212, 175, 55, 0.5))' }} />
+            <Shield size={48} className="text-gold" style={{ filter: 'drop-shadow(0 0 15px rgba(212, 175, 55, 0.4))' }} />
           )}
         </div>
 
-        <h1 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '4px', opacity: 0.5, marginBottom: '0.5rem' }}>
+        <h1 style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '4px', opacity: 0.6, marginBottom: '0.75rem', fontWeight: 700 }}>
           Verification Status: Confirmed
         </h1>
-        <h2 className="text-gold" style={{ fontSize: '2.8rem', fontWeight: 900, marginBottom: '0.5rem', lineHeight: 1 }}>
+        <h2 className="text-gold" style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.5rem', letterSpacing: '-1px' }}>
           {typeName}
         </h2>
-        <div style={{ fontSize: '1.1rem', opacity: 0.4, fontWeight: 600 }}>
-          Human OS v1.0.26 // Code: {code}
+        <div style={{ fontSize: '1rem', opacity: 0.5, fontWeight: 600, color: 'var(--ios-silver)' }}>
+          Human OS v1.0.26 // {code}
         </div>
       </div>
 
       {/* Main Dossier Card */}
       <GlassCard style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-          <div style={{ width: '4px', height: '24px', background: 'var(--gold)', borderRadius: '2px' }} />
-          <h3 style={{ fontSize: '1rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.2rem' }}>
+          <Zap size={18} className="text-gold" />
+          <h3 style={{ fontSize: '0.9rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>
             Результат Индукции
           </h3>
         </div>
-        <p style={{ fontSize: '0.95rem', lineHeight: '1.7', color: 'rgba(255,255,255,0.7)' }}>
+        <p style={{ fontSize: '1rem', lineHeight: '1.6', color: 'white', fontWeight: 400 }}>
           {isSaved 
             ? "Ваш Shadow Code успешно интегрирован. Все тактические системы синхронизированы с вашим профилем."
             : `Ваша нейронная архитектура идентифицирована как ${typeName}. Все протоколы взаимодействия Shadow Code разблокированы.`
@@ -114,57 +108,80 @@ export const InductionResult = ({ code, onBack }: { code: string, onBack: () => 
         </p>
       </GlassCard>
 
-      {/* Tactical Alliances / Sync Matrix */}
-      <div style={{ marginBottom: '2.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', opacity: 0.8 }}>
-          <Users size={20} className="text-gold" />
-          <h3 style={{ fontSize: '0.9rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>
-            Synchronization Matrix
+      {/* Synchronization Matrix */}
+      <section style={{ marginBottom: '2.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.2rem', opacity: 0.7 }}>
+          <Users size={16} />
+          <h3 style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px' }}>
+            Матрица Синхронизации
           </h3>
         </div>
         
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          {partners.map((p) => (
-            <div key={p.code} style={{
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '1fr 1fr', 
+          gap: '1rem' 
+        }}>
+          {partners.map((p, i) => (
+            <div key={i} className="glass" style={{ 
+              padding: '1.2rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem',
               background: 'rgba(255,255,255,0.03)',
-              border: `1px solid ${p.protocol === 'W' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.08)'}`,
-              borderRadius: '16px',
-              padding: '1rem',
-              transition: 'all 0.3s ease',
-              position: 'relative',
-              overflow: 'hidden'
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '16px'
             }}>
-              {p.protocol === 'PM' && (
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'radial-gradient(circle at top right, rgba(212, 175, 55, 0.1) 0%, transparent 50%)', pointerEvents: 'none' }} />
-              )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                {getProtocolIcon(p.protocol)}
-                <span style={{ fontSize: '0.7rem', fontWeight: 800, opacity: 0.6 }}>{p.protocol}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ 
+                  fontSize: '0.65rem', 
+                  fontWeight: 900, 
+                  padding: '2px 8px', 
+                  borderRadius: '6px',
+                  background: p.protocol === 'PM' ? 'var(--ios-gold)' : 'rgba(255,255,255,0.15)',
+                  color: p.protocol === 'PM' ? 'black' : 'white'
+                }}>
+                  {p.protocol}
+                </span>
+                <span style={{ fontSize: '0.6rem', opacity: 0.5 }}>{p.protocolName}</span>
               </div>
-              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: p.protocol === 'W' ? '#f87171' : '#fff' }}>
-                {p.name}
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'white', marginBottom: '0.2rem' }}>{p.name}</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--ios-silver)', opacity: 0.6 }}>{p.code}</div>
               </div>
-              <div style={{ fontSize: '0.75rem', opacity: 0.4 }}>{p.code}</div>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
+      {/* Action Buttons */}
       {!isSaved ? (
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <Button variant="secondary" onClick={onBack} style={{ flex: 1 }} disabled={isSaving}>
-            <ArrowLeft size={18} /> BACK
+          <Button 
+            variant="secondary" 
+            onClick={onBack} 
+            style={{ flex: 1, padding: '1.1rem' }} 
+            disabled={isSaving}
+          >
+            <ArrowLeft size={18} style={{ marginRight: '0.5rem' }} /> НАЗАД
           </Button>
-          <Button variant="primary" onClick={handleSave} style={{ flex: 2 }} disabled={isSaving}>
-            {isSaving ? <Loader2 className="animate-spin" /> : "FINALIZE DOSSIER"} <CheckCircle2 size={18} />
+          <Button 
+            variant="primary" 
+            onClick={handleSave} 
+            style={{ flex: 2, padding: '1.1rem' }} 
+            disabled={isSaving}
+          >
+            {isSaving ? <Loader2 className="animate-spin" /> : <><CheckCircle2 size={18} style={{ marginRight: '0.5rem' }} /> ПРИНЯТЬ</>}
           </Button>
         </div>
       ) : (
-        <div style={{ textAlign: 'center', padding: '1rem' }}>
-          <div className="text-gold" style={{ fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' }}>
-            Initializing Core Systems...
-          </div>
-        </div>
+        <Button 
+          variant="primary" 
+          onClick={() => router.push('/')}
+          style={{ width: '100%', padding: '1.2rem' }}
+        >
+          <Zap size={18} style={{ marginRight: '0.5rem' }} /> ВЕРНУТЬСЯ В NEXUS
+        </Button>
       )}
     </div>
   );

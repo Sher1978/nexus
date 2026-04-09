@@ -6,9 +6,17 @@
   --accent: #d4af37;
   --accent-light: #f9e29c;
   --accent-dark: #aa8c2c;
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-blur: 24px;
+  
+  /* iOS 26 Glass System */
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-bg-hover: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --glass-highlight: rgba(255, 255, 255, 0.25);
+  --glass-blur: 32px;
+  
+  /* Tactical Palette */
+  --ios-silver: #e5e5e7;
+  --ios-gold: #d4af37;
 }
 
 * {
@@ -49,14 +57,29 @@ body::before {
   100% { transform: scale(1.2) translate(5%, 5%); }
 }
 
-/* Glassmorphism */
+/* Glassmorphism iOS 26 */
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
   border: 1px solid var(--glass-border);
   border-radius: 28px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  box-shadow: 
+    0 10px 40px 0 rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px var(--glass-highlight);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+  pointer-events: none;
 }
 
 /* Premium Gold Text */
