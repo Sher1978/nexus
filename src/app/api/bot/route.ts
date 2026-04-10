@@ -1,5 +1,6 @@
 import { Telegraf, Markup } from 'telegraf';
 import { NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabaseClient';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 
