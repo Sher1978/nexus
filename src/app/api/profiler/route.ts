@@ -56,7 +56,8 @@ export async function POST(req: Request) {
   try {
     const { messages, audio, sessionId, initialHypothesis } = await req.json();
 
-    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    if (!apiKey) {
       return NextResponse.json({ error: "API Key missing" }, { status: 500 });
     }
 
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
       ? `ГИПОТЕЗА ИЗ БЫСТРОГО ТЕСТА: ${initialHypothesis}. Используй это как точку отсчета, но не принимай на веру. Проверь её в первую очередь.\n` 
       : '';
 
-    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.0-flash",
       systemInstruction: contextPrefix + SYSTEM_PROMPT,
