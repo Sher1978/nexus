@@ -22,45 +22,125 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
   return (
     <div className="bottom-nav-container">
       <nav className="bottom-nav-bar">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          const isNeon = tab.neon;
-
-          return (
-            <button
-              key={tab.id}
-              className={`nav-item ${isActive ? 'active' : ''} ${isNeon ? 'neon-item' : ''}`}
-              onClick={() => onTabChange(tab.id as TabType)}
-            >
-              <div className="icon-container">
-                {isActive && !isNeon && (
+        <div className="nav-jtbd-group">
+          {tabs.slice(0, 2).map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            const isNeon = tab.neon;
+            return (
+              <button
+                key={tab.id}
+                className={`nav-item ${isActive ? 'active' : ''} ${isNeon ? 'neon-item' : ''}`}
+                onClick={() => onTabChange(tab.id as TabType)}
+              >
+                <div className="icon-container">
+                  {isActive && !isNeon && (
+                    <motion.div
+                      layoutId="nav-bg"
+                      className="absolute inset-0 bg-white/5 rounded-2xl -z-10"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <Icon 
+                    size={24} 
+                    strokeWidth={isActive || isNeon ? 2.5 : 2}
+                    className={`transition-all duration-300 ${isNeon ? 'scale-110 drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.8)]' : ''}`}
+                  />
+                </div>
+                <span className={`text-[10px] sm:text-[11px] font-bold mt-1.5 uppercase tracking-wider ${isNeon ? 'text-accent drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.5)]' : ''}`}>
+                  {tab.label}
+                </span>
+                {isActive && (
                   <motion.div
-                    layoutId="nav-bg"
-                    className="absolute inset-0 bg-white/5 rounded-2xl -z-10"
+                    layoutId="active-indicator"
+                    className="nav-indicator"
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
-                <Icon 
-                  size={24} 
-                  strokeWidth={isActive || isNeon ? 2.5 : 2}
-                  className={`transition-all duration-300 ${isNeon ? 'scale-110 drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.8)]' : ''}`}
-                />
-              </div>
-              <span className={`text-[10px] sm:text-[11px] font-bold mt-1.5 uppercase tracking-wider ${isNeon ? 'text-accent drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.5)]' : ''}`}>
-                {tab.label}
-              </span>
-              
-              {isActive && (
-                <motion.div
-                  layoutId="active-indicator"
-                  className="nav-indicator"
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
-              )}
-            </button>
-          );
-        })}
+              </button>
+            );
+          })}
+        </div>
+        <div className="nav-divider" />
+        <div className="nav-jtbd-group action-group">
+          {tabs.slice(2, 3).map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            const isNeon = tab.neon;
+            return (
+              <button
+                key={tab.id}
+                className={`nav-item ${isActive ? 'active' : ''} ${isNeon ? 'neon-item' : ''}`}
+                onClick={() => onTabChange(tab.id as TabType)}
+              >
+                <div className="icon-container">
+                  {isActive && !isNeon && (
+                    <motion.div
+                      layoutId="nav-bg-action"
+                      className="absolute inset-0 bg-white/5 rounded-2xl -z-10"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <Icon 
+                    size={26} 
+                    strokeWidth={isActive || isNeon ? 2.5 : 2}
+                    className={`transition-all duration-300 ${isNeon ? 'scale-110 drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.9)]' : ''}`}
+                  />
+                </div>
+                <span className={`text-[10px] sm:text-[11px] font-bold mt-1.5 uppercase tracking-wider ${isNeon ? 'text-accent drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.5)]' : ''}`}>
+                  {tab.label}
+                </span>
+                {isActive && (
+                  <motion.div
+                    layoutId="active-indicator"
+                    className="nav-indicator"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <div className="nav-divider" />
+        <div className="nav-jtbd-group">
+          {tabs.slice(3, 4).map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            const isNeon = tab.neon;
+            return (
+              <button
+                key={tab.id}
+                className={`nav-item ${isActive ? 'active' : ''} ${isNeon ? 'neon-item' : ''}`}
+                onClick={() => onTabChange(tab.id as TabType)}
+              >
+                <div className="icon-container">
+                  {isActive && !isNeon && (
+                    <motion.div
+                      layoutId="nav-bg-profile"
+                      className="absolute inset-0 bg-white/5 rounded-2xl -z-10"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <Icon 
+                    size={24} 
+                    strokeWidth={isActive || isNeon ? 2.5 : 2}
+                    className={`transition-all duration-300 ${isNeon ? 'scale-110 drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.8)]' : ''}`}
+                  />
+                </div>
+                <span className={`text-[10px] sm:text-[11px] font-bold mt-1.5 uppercase tracking-wider ${isNeon ? 'text-accent drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.5)]' : ''}`}>
+                  {tab.label}
+                </span>
+                {isActive && (
+                  <motion.div
+                    layoutId="active-indicator"
+                    className="nav-indicator"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
       </nav>
     </div>
   );
