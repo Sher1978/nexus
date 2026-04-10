@@ -121,28 +121,44 @@ export default function Home() {
                     className="w-full"
                   >
                     <Link href="/induction" className="block w-full">
-                      <GlassCard className="p-0 border-accent/40 overflow-hidden hover:border-accent group transition-all duration-500 relative bg-accent/5">
-                        <div className="p-8 flex flex-col items-center text-center">
-                           <div className="w-16 h-16 rounded-2xl bg-accent/20 flex items-center justify-center border border-accent/30 mb-6 group-hover:scale-110 transition-transform duration-500">
-                             <Scan size={32} className="text-accent" />
-                           </div>
-                           <h3 className="text-3xl font-black uppercase tracking-tighter mb-2 group-hover:text-accent transition-colors">Индукция</h3>
-                           <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold mb-8">
-                             Neural Architecture Identification
+                      <GlassCard className="p-0 border-accent/40 overflow-hidden hover:border-accent group transition-all duration-700 relative bg-accent/5 backdrop-blur-2xl">
+                        <div className="p-10 flex flex-col items-center text-center">
+                           <motion.div 
+                             animate={{ 
+                               boxShadow: ["0 0 20px rgba(var(--accent-rgb),0.2)", "0 0 40px rgba(var(--accent-rgb),0.5)", "0 0 20px rgba(var(--accent-rgb),0.2)"] 
+                             }}
+                             transition={{ duration: 4, repeat: Infinity }}
+                             className="w-20 h-20 rounded-3xl bg-accent/20 flex items-center justify-center border border-accent/30 mb-8 group-hover:scale-105 transition-transform duration-700"
+                           >
+                             <Scan size={36} className="text-accent" />
+                           </motion.div>
+                           <h3 className="text-4xl font-black uppercase tracking-tighter mb-3 group-hover:text-accent transition-colors italic">Индукция</h3>
+                           <p className="text-[11px] text-white/50 uppercase tracking-[0.3em] font-bold mb-10">
+                             Architecture Identification
                            </p>
                            
-                           <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-accent/30 to-transparent mb-8" />
+                           <div className="w-full flex justify-center gap-1.5 mb-10">
+                             {[...Array(5)].map((_, i) => (
+                               <motion.div 
+                                 key={i}
+                                 animate={{ opacity: [0.2, 1, 0.2] }}
+                                 transition={{ duration: 2, delay: i * 0.2, repeat: Infinity }}
+                                 className="w-1.5 h-1.5 rounded-full bg-accent" 
+                               />
+                             ))}
+                           </div>
                            
-                           <div className="flex items-center gap-2 text-accent font-black text-sm uppercase tracking-[0.3em]">
-                             <Zap size={14} className="fill-accent" />
-                             Начать тест
+                           <div className="flex items-center gap-3 text-accent font-black text-base uppercase tracking-[0.35em] py-4 px-8 rounded-2xl bg-accent/10 border border-accent/20 group-hover:bg-accent/20 transition-all">
+                             <Zap size={16} className="fill-accent" />
+                             Начать процесс
                            </div>
                         </div>
-                        <div className="absolute bottom-0 left-0 w-full h-1 bg-accent/20 overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-accent/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute bottom-0 left-0 w-full h-1.5 bg-accent/10 overflow-hidden">
                           <motion.div 
-                            animate={{ x: ['-100%', '100%'] }}
-                            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                            className="w-1/3 h-full bg-accent pr-px shadow-[0_0_15px_var(--accent)]"
+                            animate={{ x: ['-100%', '200%'] }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                            className="w-1/4 h-full bg-accent pr-px shadow-[0_0_20px_var(--accent)]"
                           />
                         </div>
                       </GlassCard>
@@ -206,14 +222,14 @@ export default function Home() {
   };
 
   return (
-    <main className="flex flex-col items-center min-h-screen bg-black">
+    <main className="flex flex-col items-center min-h-screen">
       <div className="scanner-line" />
       <TopNav 
         title={getPageTitle()} 
         showBack={activeTab !== 'nexus'} 
         onBack={() => setActiveTab('nexus')} 
       />
-      <div className="w-full pt-[40px] flex flex-col items-center">
+      <div className="w-full pt-24 pb-12 flex flex-col items-center">
         {loading ? (
           <div className="flex items-center justify-center min-h-[50vh]">
             <div className="w-16 h-16 rounded-full border-2 border-accent border-t-transparent animate-spin" />
