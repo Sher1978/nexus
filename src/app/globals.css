@@ -15,8 +15,190 @@
   --glass-blur: 32px;
   
   /* Tactical Palette */
-  --ios-silver: #e5e5e7;
-  --ios-gold: #d4af37;
+  --ios-silver: #a1a1aa;
+  --nav-height: 72px;
+
+  /* Quadra Themes */
+  --alpha: #00F2FF;
+  --beta: #E000FF;
+  --gamma: #FFD700;
+  --delta: #00FF94;
+}
+
+/* --- Stories-style Profile Ring --- */
+.stories-ring {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  background: var(--ring-color, var(--ios-gold));
+  transition: all 0.5s ease;
+}
+
+.stories-ring::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  background: inherit;
+  opacity: 0.3;
+  filter: blur(8px);
+  animation: ring-pulse 3s infinite ease-in-out;
+}
+
+@keyframes ring-pulse {
+  0% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.1); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 0.3; }
+}
+
+.stories-inner {
+  background: var(--background);
+  border-radius: 50%;
+  padding: 2px;
+  z-index: 1;
+}
+
+/* --- Holographic Grid Background --- */
+.holographic-grid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.15;
+  background-image: 
+    linear-gradient(rgba(212, 175, 55, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 175, 55, 0.1) 1px, transparent 1px);
+  background-size: 40px 40px;
+  perspective: 1000px;
+  transform: rotateX(60deg) translateY(-20%);
+  mask-image: linear-gradient(to bottom, black, transparent);
+  animation: grid-move 20s linear infinite;
+}
+
+@keyframes grid-move {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 40px; }
+}
+
+/* --- iOS 26 Bottom Navigation --- */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-height);
+  background: rgba(10, 10, 10, 0.4);
+  backdrop-filter: blur(25px) saturate(200%);
+  -webkit-backdrop-filter: blur(25px) saturate(200%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 1rem;
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.3);
+  gap: 0.3rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0.5rem;
+  min-width: 64px;
+}
+
+.nav-item.active {
+  color: var(--ios-gold);
+}
+
+.nav-item.active .nav-icon {
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+  transform: translateY(-2px);
+}
+
+.nav-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- QR and Profile Styles --- */
+.qr-container {
+  padding: 1.5rem;
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 20px rgba(255,215,0,0.1);
+  margin: 1.5rem auto;
+  display: inline-block;
+}
+
+.profile-header {
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.agent-id-badge {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: var(--ios-silver);
+}
+
+/* --- Scanning HUD --- */
+.scanner-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 250px;
+  height: 250px;
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 32px;
+  pointer-events: none;
+}
+
+.scanner-line {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: var(--ios-gold);
+  box-shadow: 0 0 15px var(--ios-gold);
+  animation: scan 2s ease-in-out infinite;
+}
+
+@keyframes scan {
+  0% { top: 0; opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
 }
 
 * {
@@ -102,6 +284,46 @@ body::before {
   animation: aura-pulse 2s infinite;
 }
 
+/* Neural Sync Animations */
+@keyframes neural-pulse {
+  0% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.5); opacity: 0.1; }
+  100% { transform: scale(1); opacity: 0.3; }
+}
+
+@keyframes data-flow {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.neural-line {
+  height: 2px;
+  background: rgba(212, 175, 55, 0.1);
+  position: relative;
+  overflow: hidden;
+  border-radius: 1px;
+}
+
+.neural-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.6), transparent);
+  animation: data-flow 2s infinite linear;
+}
+
+.node-pulse {
+  width: 8px;
+  height: 8px;
+  background: var(--ios-gold);
+  border-radius: 50%;
+  box-shadow: 0 0 15px var(--ios-gold);
+  animation: neural-pulse 2s infinite ease-in-out;
+}
+
 /* Scan Line Animation */
 @keyframes scanning {
   0% { top: 0%; opacity: 0; }
@@ -118,4 +340,69 @@ body::before {
   box-shadow: 0 0 15px var(--accent);
   z-index: 10;
   animation: scanning 3s infinite linear;
+}
+/* Additional Tactical HUD Elements */
+.radar-pulse {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radar-pulse::before,
+.radar-pulse::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  animation: radar-expand 2s infinite ease-out;
+  opacity: 0;
+}
+
+.radar-pulse::after {
+  animation-delay: 1s;
+}
+
+@keyframes radar-expand {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(3); opacity: 0; }
+}
+
+.sync-connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.sync-connector::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--ios-gold), transparent);
+  animation: sync-flow 2s infinite linear;
+}
+
+@keyframes sync-flow {
+  0% { transform: translateX(-100%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+.fade-in {
+  animation: fade-in-frames 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fade-in-frames {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
 }
