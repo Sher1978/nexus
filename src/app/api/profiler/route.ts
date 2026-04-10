@@ -101,17 +101,26 @@ export async function POST(req: Request) {
 
     // Persistence: Update session in Supabase if sessionId provided
     if (sessionId) {
-      const updatedMessages = [...messages, { role: 'assistant', content: text }];
-      
-      const { error: updateError } = await supabase
+      const resultArchetype = isCompleted ? (text.match(/ВАШ СОЦИОТИП: ([\wа-яА-ЯёЁ\s]+)/i)?.[1] || null) : null;
+
+      const { data: sessionData, error: updateError } = await supabase
         .from('induction_sessions')
         .update({
           conversation: updatedMessages,
           is_completed: isCompleted,
-          result_archetype: isCompleted ? (text.match(/ВАШ СОЦИОТИП: ([\wа-яА-ЯёЁ\s]+)/i)?.[1] || null) : null,
+          result_archetype: resultArchetype,
           updated_at: new Date().toISOString()
         })
-        .eq('id', sessionId);
+        .eq('id', sessionId)
+        .select('agent_id')
+        .single();
+
+      if (isCompleted && resultArchetype && sessionData?.agent_id) {
+        await supabase
+          .from('agents')
+          .update({ archetype: resultArchetype })
+          .eq('id', sessionData.agent_id);
+      }
 
       if (updateError) {
         console.error('Session update error:', updateError);

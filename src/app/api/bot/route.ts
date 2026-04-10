@@ -35,17 +35,30 @@ async function getAgent(ctx: any) {
 // --- COMMANDS ---
 bot.start(async (ctx) => {
   const firstName = ctx.from.first_name || 'Агент';
+  const telegramId = String(ctx.from.id);
   
-  // Handle sync token if present
+  // Handle sync token if present: /start sync_UUID
   const startPayload = ctx.payload;
   if (startPayload && startPayload.startsWith('sync_')) {
-    // Logic for explicit linking if needed, though ctx.from.id is usually enough
+    const userId = startPayload.replace('sync_', '');
+    
+    const { error: syncError } = await supabase
+      .from('agents')
+      .update({ telegram_id: telegramId })
+      .eq('id', userId);
+
+    if (!syncError) {
+      await ctx.reply(`✅ СИНХРОНИЗАЦИЯ УСПЕШНА\n Ваш профиль Nexus связан с аккаунтом @${ctx.from.username || telegramId}.`);
+    } else {
+      console.error('Sync error:', syncError);
+      await ctx.reply(`❌ ОШИБКА СИНХРОНИЗАЦИИ\n Не удалось привязать профиль. Возможно, он уже связан с другим аккаунтом.`);
+    }
   }
 
   await ctx.replyWithMarkdownV2(
     `⚡️ *ВХОД В НЕЙРОСЕТЬ NEXUS ПОДТВЕРЖДЕН* ⚡️\n\n` +
-    `Приветствую, *${firstName}*\\. Ваша нейронная архитектура (Human OS) готова к синхронизации\\.\n\n` +
-    `📡 *Протокол:* Elite Obsidian v1\\.0\\.26\n` +
+    `Приветствую, *${firstName}*\\. Ваша нейронная архитектура готовa к синхронизации\\.\n\n` +
+    `📡 *Протокол:* Human OS v1\\.0\\.26\n` +
     `🛡 *Статус:* Доступ разрешен`,
     MAIN_MENU
   );
@@ -54,13 +67,17 @@ bot.start(async (ctx) => {
 // --- CALLBACK HANDLERS ---
 bot.action('profile', async (ctx) => {
   const agent = await getAgent(ctx);
-  if (!agent) return ctx.reply('Профиль не найден. Запустите /start');
+  if (!agent) {
+    return ctx.reply('⚠️ ПРОФИЛЬ НЕ НАЙДЕН\n\nИспользуйте кнопку "ВХОД В NEXUS" в приложении, чтобы привязать бота.', 
+      Markup.inlineKeyboard([[Markup.button.webApp('🚀 ОТКРЫТЬ NEXUS', APP_URL)]])
+    );
+  }
 
-  const cardUrl = `${APP_URL}/api/og/card?id=${agent.id}`;
+  const cardUrl = `${APP_URL}/api/og/card?id=${agent.id}&t=${Date.now()}`;
   
   await ctx.replyWithPhoto(cardUrl, {
-    caption: `🆔 *ID:* \`${agent.id.slice(0, 8)}\`\n👤 *AGENT:* ${agent.full_name}\n🧬 *ARCHETYPE:* ${agent.archetype || 'НЕ ОПРЕДЕЛЕН'}\n\n` +
-             `_Nexus Identity Card v1.0_`,
+    caption: `🆔 *ID:* \`${agent.id.slice(0, 8)}\`\n👤 *AGENT:* ${agent.full_name || ctx.from.first_name}\n🧬 *ARCHETYPE:* ${agent.archetype || 'НЕ ОПРЕДЕЛЕН'}\n\n` +
+             `*System Signature:* Encrypted`,
     parse_mode: 'MarkdownV2',
     ...MAIN_MENU
   });
@@ -68,32 +85,38 @@ bot.action('profile', async (ctx) => {
 
 bot.action('start_induction', async (ctx) => {
   const agent = await getAgent(ctx);
-  if (!agent) return ctx.reply('Сначала запустите /start');
+  if (!agent) return ctx.reply('Сначала привяжите профиль через приложение.');
 
-  // Create or get session
+  // Create session
   const { data: session } = await supabase
     .from('induction_sessions')
-    .insert({ agent_id: agent.id, conversation: [{ role: 'assistant', content: 'INITIALIZING INTERFACE... Neural link established. Tell me about a person you resonate with—and why?' }] })
+    .insert({ 
+      agent_id: agent.id, 
+      conversation: [{ role: 'assistant', content: 'INITIALIZING INTERFACE... Neural link established. Tell me about a person you resonate with—and why?' }] 
+    })
     .select()
     .single();
 
   await ctx.reply(`⚡️ ИНДУКЦИЯ ЗАПУЩЕНА\n\nNeural link established. Welcome. I am your Nexus Profiler.\n\nTo begin our session, tell me about a person or character you deeply resonate with—and why?`, INDUCTION_MENU);
 });
 
+bot.action('matrix', async (ctx) => {
+  const agent = await getAgent(ctx);
+  const matrixStatus = agent?.archetype ? 'ACTIVE (LEVEL 26)' : 'RESTRICTED';
+  
+  await ctx.answerCbQuery();
+  await ctx.replyWithMarkdownV2(
+    `🌐 *ACCESSING NEURAL MATRIX* 🌐\n\n` +
+    `*Sectors:* 64/64 Detected\n` +
+    `*Nodes:* Optimized\n` +
+    `*Status:* ${matrixStatus}\n\n` +
+    `_Для визуального управления Матрицей используйте Desktop интерфейс Nexus\\._`,
+    MAIN_MENU
+  );
+});
+
 bot.action('cancel_induction', async (ctx) => {
   await ctx.reply('Индукция прервана. Возврат в главное меню.', MAIN_MENU);
-});
-
-// --- COMMAND ACTIONS ---
-
-bot.action('matrix', async (ctx) => {
-  await ctx.answerCbQuery();
-  await ctx.reply('🌐 ACCESSING MATRIX...\n\nThe Neural Matrix is currently in restricted mode. Only Level 26 Agents can access the full architectural map.', MAIN_MENU);
-});
-
-bot.action('scan', async (ctx) => {
-  await ctx.answerCbQuery();
-  await ctx.reply('📸 SCAN PROTOCOL\n\nTo scan a physical object or QR code, use the Web Nexus interface. The Bot provides remote diagnostic support only.', MAIN_MENU);
 });
 
 // --- MESSAGE HANDLER (INDUCTION FLOW) ---
@@ -119,16 +142,24 @@ bot.on(['text', 'voice'], async (ctx) => {
   if ('text' in ctx.message) {
     content = ctx.message.text;
   } else if ('voice' in ctx.message) {
-    content = '[Voice Data]';
-    // Get file link
-    const file = await ctx.telegram.getFile(ctx.message.voice.file_id);
-    const audioUrl = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
-    const audioRes = await fetch(audioUrl);
-    const buffer = await audioRes.arrayBuffer();
-    audioData = Buffer.from(buffer).toString('base64');
+    content = '[Audio Response]';
+    try {
+      const file = await ctx.telegram.getFile(ctx.message.voice.file_id);
+      const audioUrl = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
+      const audioRes = await fetch(audioUrl);
+      const buffer = await audioRes.arrayBuffer();
+      audioData = Buffer.from(buffer).toString('base64');
+    } catch (e) {
+      console.error('File retrieval error:', e);
+    }
   }
 
-  // Call the profiler API logic (internal fetch or direct call)
+  if (!content && !audioData) return;
+
+  // Show typing
+  await ctx.sendChatAction('typing');
+
+  // Call the profiler API logic
   const profilerRes = await fetch(`${APP_URL}/api/profiler`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
