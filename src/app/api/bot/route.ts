@@ -128,7 +128,13 @@ function getBot() {
 
     const { data: session } = await supabaseAdmin
       .from('induction_sessions')
-      .insert({ agent_id: agent.id, conversation: [{ role: 'assistant', content: 'INITIALIZING INTERFACE...' }] })
+      .insert({ 
+        agent_id: agent.id, 
+        conversation: [
+          { role: 'user', content: 'START_PROTOCOL' },
+          { role: 'assistant', content: 'Neural link established. Tell me about a person or character you deeply resonate with—and why?' }
+        ] 
+      })
       .select().single();
 
     await ctx.reply(`⚡️ <b>ИНДУКЦИЯ ЗАПУЩЕНА</b>\n\nNeural link established. Tell me about a person or character you deeply resonate with—and why?`, { 
