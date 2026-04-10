@@ -50,14 +50,14 @@ function getBot() {
   const sendMainMenu = async (ctx: any, textPrefix = '') => {
     const firstName = (ctx.from.first_name || 'Агент').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const MENU_TEXT = textPrefix + 
-      `⚡️ <b>ВХОД В НЕЙРОСЕТЬ NEXUS ПОДТВЕРЖДЕН</b> ⚡️\n\n` +
-      `Приветствую, <b>${firstName}</b>. Ваша нейронная архитектура готова к работе.\n\n` +
-      `📡 <b>Протокол:</b> Human OS v1.0.26\n` +
+      `⚡️ <b>ВХОД В SHADOW CODE ПОДТВЕРЖДЕН</b> ⚡️\n\n` +
+      `Приветствую, <b>${firstName}</b>. Ваш Теневой Код готов к расшифровке.\n\n` +
+      `📡 <b>Протокол:</b> Nexus v1.0.26\n` +
       `🛡 <b>Статус:</b> Доступ разрешен`;
 
     const MAIN_MENU = Markup.inlineKeyboard([
-      [Markup.button.callback('📂 ПРОФИЛЬ', 'profile'), Markup.button.callback('🧬 АРХИТЕКТУРА', 'matrix')],
-      [Markup.button.callback('⚡️ НАЧАТЬ ИНДУКЦИЮ', 'start_induction')],
+      [Markup.button.callback('📂 ТЕНЕВОЙ КОД', 'profile'), Markup.button.callback('🧬 КАРТА ТЕНИ', 'matrix')],
+      [Markup.button.callback('⚡️ УЗНАТЬ СВОЙ КОД', 'start_induction')],
       [Markup.button.webApp('🚀 ВХОД В NEXUS', APP_URL)]
     ]);
 
@@ -109,17 +109,17 @@ function getBot() {
 
     const cardUrl = `${APP_URL}/api/og/card?id=${agent.data?.id || agent.id}&t=${Date.now()}`;
     await ctx.replyWithPhoto(cardUrl, {
-      caption: `<b>ID:</b> <code>${(agent.data?.id || agent.id).slice(0, 8)}</code>\n<b>AGENT:</b> ${agent.data?.full_name || agent.full_name}\n<b>ARCHETYPE:</b> ${agent.data?.archetype || agent.archetype}`,
+      caption: `<b>ID:</b> <code>${(agent.data?.id || agent.id).slice(0, 8)}</code>\n<b>STATUS:</b> АКТИВЕН\n<b>ТЕНЕВОЙ КОД:</b> ${agent.data?.archetype || agent.archetype}`,
       parse_mode: 'HTML',
-      ...Markup.inlineKeyboard([[Markup.button.callback('🧬 АРХИТЕКТУРА', 'matrix'), Markup.button.callback('⚡️ ИНДУКЦИЯ', 'start_induction')]])
+      ...Markup.inlineKeyboard([[Markup.button.callback('🧬 КАРТА ТЕНИ', 'matrix'), Markup.button.callback('⚡️ УЗНАТЬ КОД', 'start_induction')]])
     });
   });
 
   bot.action('matrix', async (ctx) => {
     const { agent } = await getOrCreateAgent(ctx);
-    const status = agent?.archetype ? `ACTIVE (LEVEL 26)` : 'RESTRICTED';
+    const status = agent?.archetype ? `ACTIVE (SYNC 26%)` : 'RESTRICTED';
     await ctx.answerCbQuery();
-    await ctx.reply(`🌐 <b>ACCESSING NEURAL ARCHITECTURE</b> 🌐\n\n<b>Status:</b> ${status}\n\n<i>Для управления Архитектурой используйте Desktop интерфейс.</i>`, { parse_mode: 'HTML' });
+    await ctx.reply(`🌐 <b>ДОСТУП К КАРТЕ ТЕНИ</b> 🌐\n\n<b>Статус:</b> ${status}\n\n<i>Для детального анализа используйте Desktop интерфейс.</i>`, { parse_mode: 'HTML' });
   });
 
   bot.action('start_induction', async (ctx) => {
@@ -137,14 +137,14 @@ function getBot() {
       })
       .select().single();
 
-    await ctx.reply(`⚡️ <b>ИНДУКЦИЯ ЗАПУЩЕНА</b>\n\nNeural link established. Tell me about a person or character you deeply resonate with—and why?`, { 
+    await ctx.reply(`⚡️ <b>СКАНИРОВАНИЕ ЗАПУЩЕНО</b>\n\nNeural link established. Введите данные для анализа вашей Тени. Начнем с простого: расскажите о персонаже или реальном человеке, который вызывает у вас сильный отклик (восхищение или резонанс)? Почему?`, { 
       parse_mode: 'HTML', 
       ...Markup.inlineKeyboard([[Markup.button.callback('⏹ ПРЕРВАТЬ', 'cancel_induction')]]) 
     });
   });
 
   bot.action('cancel_induction', async (ctx) => {
-    await ctx.reply('Индукция прервана.');
+    await ctx.reply('Процесс остановлен. Возврат в главное меню.');
   });
 
   // --- MESSAGES ---
