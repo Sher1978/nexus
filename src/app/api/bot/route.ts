@@ -56,7 +56,7 @@ function getBot() {
       `🛡 <b>Статус:</b> Доступ разрешен`;
 
     const MAIN_MENU = Markup.inlineKeyboard([
-      [Markup.button.callback('📂 ПРОФИЛЬ', 'profile'), Markup.button.callback('🧬 МАТРИЦА', 'matrix')],
+      [Markup.button.callback('📂 ПРОФИЛЬ', 'profile'), Markup.button.callback('🧬 АРХИТЕКТУРА', 'matrix')],
       [Markup.button.callback('⚡️ НАЧАТЬ ИНДУКЦИЮ', 'start_induction')],
       [Markup.button.webApp('🚀 ВХОД В NEXUS', APP_URL)]
     ]);
@@ -111,7 +111,7 @@ function getBot() {
     await ctx.replyWithPhoto(cardUrl, {
       caption: `<b>ID:</b> <code>${(agent.data?.id || agent.id).slice(0, 8)}</code>\n<b>AGENT:</b> ${agent.data?.full_name || agent.full_name}\n<b>ARCHETYPE:</b> ${agent.data?.archetype || agent.archetype}`,
       parse_mode: 'HTML',
-      ...Markup.inlineKeyboard([[Markup.button.callback('🧬 МАТРИЦА', 'matrix'), Markup.button.callback('⚡️ ИНДУКЦИЯ', 'start_induction')]])
+      ...Markup.inlineKeyboard([[Markup.button.callback('🧬 АРХИТЕКТУРА', 'matrix'), Markup.button.callback('⚡️ ИНДУКЦИЯ', 'start_induction')]])
     });
   });
 
@@ -119,7 +119,7 @@ function getBot() {
     const { agent } = await getOrCreateAgent(ctx);
     const status = agent?.archetype ? `ACTIVE (LEVEL 26)` : 'RESTRICTED';
     await ctx.answerCbQuery();
-    await ctx.reply(`🌐 <b>ACCESSING NEURAL MATRIX</b> 🌐\n\n<b>Status:</b> ${status}\n\n<i>Для управления Матрицей используйте Desktop интерфейс.</i>`, { parse_mode: 'HTML' });
+    await ctx.reply(`🌐 <b>ACCESSING NEURAL ARCHITECTURE</b> 🌐\n\n<b>Status:</b> ${status}\n\n<i>Для управления Архитектурой используйте Desktop интерфейс.</i>`, { parse_mode: 'HTML' });
   });
 
   bot.action('start_induction', async (ctx) => {
