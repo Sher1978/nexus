@@ -56,45 +56,77 @@ export async function POST(req: Request) {
       ? `ГИПОТЕЗА ИЗ БЫСТРОГО ТЕСТА: ${initialHypothesis}. Используй это как точку отсчета, но не принимай на веру. Проверь её в первую очередь.\n` 
       : '';
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash",
-      systemInstruction: contextPrefix + SYSTEM_PROMPT,
-      generationConfig: {
-        temperature: 0.7,
-        topP: 0.8,
-        topK: 40,
+    const MODELS_TO_TRY = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
+    let text = "";
+    let lastError = null;
+
+    for (const modelName of MODELS_TO_TRY) {
+      let retries = 2;
+      while (retries > 0) {
+        try {
+          const model = genAI.getGenerativeModel({ 
+            model: modelName,
+            systemInstruction: contextPrefix + SYSTEM_PROMPT,
+            generationConfig: {
+              temperature: 0.7,
+              topP: 0.8,
+              topK: 40,
+            }
+          });
+
+          const chat = model.startChat({
+            history: messages.slice(0, -1).map((m: any) => ({
+              role: m.role === "user" ? "user" : "model",
+              parts: [{ text: m.content }],
+            })),
+          });
+
+          const lastMessage = messages[messages.length - 1];
+          const userParts: any[] = [{ text: lastMessage.content || "Analyze my voice response." }];
+
+          if (audio) {
+            userParts.push({
+              inlineData: {
+                mimeType: "audio/webm",
+                data: audio,
+              },
+            });
+          }
+
+          const result = await chat.sendMessage(userParts);
+          const response = await result.response;
+          text = response.text();
+          
+          if (text) break; // Success!
+        } catch (error: any) {
+          lastError = error;
+          console.error(`Error with ${modelName} (retries left: ${retries}):`, error.message);
+          
+          // Only retry on quota (429) or transient errors
+          if (error.message?.includes('429') || error.message?.includes('500') || error.message?.includes('503')) {
+            retries--;
+            if (retries > 0) {
+              await new Promise(r => setTimeout(r, 1500)); // Wait 1.5s before retry
+              continue;
+            }
+          } else {
+            break; // Non-retryable error, try next model
+          }
+        }
       }
-    });
-
-    const chat = model.startChat({
-      history: messages.slice(0, -1).map((m: any) => ({
-        role: m.role === "user" ? "user" : "model",
-        parts: [{ text: m.content }],
-      })),
-    });
-
-    const lastMessage = messages[messages.length - 1];
-    const userParts: any[] = [{ text: lastMessage.content || "Analyze my voice response." }];
-
-    if (audio) {
-      userParts.push({
-        inlineData: {
-          mimeType: "audio/webm",
-          data: audio,
-        },
-      });
+      if (text) break; // If we got a result, stop trying models
     }
 
-    const result = await chat.sendMessage(userParts);
-    const response = await result.response;
-    const text = response.text();
-    const isCompleted = text.includes('ИНДУКЦИЯ ЗАВЕРШЕНА');
+    if (!text) {
+      throw lastError || new Error("All models failed to respond.");
+    }
 
+    const isCompleted = text.includes('АНАЛИЗ ЗАВЕРШЕН');
+    
     // Persistence: Update session in Supabase if sessionId provided
     if (sessionId) {
       const updatedMessages = [...messages, { role: 'assistant', content: text }];
-      const resultArchetype = isCompleted ? (text.match(/ВАШ СОЦИОТИП: ([\wа-яА-ЯёЁ\s]+)/i)?.[1] || null) : null;
+      const resultArchetype = isCompleted ? (text.match(/ВАШ ТЕНЕВОЙ КОД: ([\wа-яА-ЯёЁ\s]+)/i)?.[1] || null) : null;
 
       const { data: sessionData, error: updateError } = await supabaseAdmin
         .from('induction_sessions')
