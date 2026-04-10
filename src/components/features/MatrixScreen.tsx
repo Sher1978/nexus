@@ -171,7 +171,7 @@ export const MatrixScreen: React.FC = () => {
         <div className="text-[8px] font-black opacity-20 text-center tracking-[0.5em] uppercase italic">
           Nexus Neural Link // Synchronicity Engine Active
         </div>
-      </header>
+      </footer>
     </div>
   );
 };

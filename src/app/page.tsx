@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cpu, Scan, Shield, Users, Globe, ChevronRight } from "lucide-react";
+import { Cpu, Scan, Shield, Users, Globe, ChevronRight, Zap } from "lucide-react";
 import { SHADOW_CODE_NAMES, TYPE_QUADRA, QUADRA_DATA } from "@/lib/shadowCode";
 import { useAuth } from "@/components/features/AuthProvider";
 import { getTelegramWebApp } from "@/lib/telegram";
