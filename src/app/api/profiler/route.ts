@@ -101,6 +101,7 @@ export async function POST(req: Request) {
 
     // Persistence: Update session in Supabase if sessionId provided
     if (sessionId) {
+      const updatedMessages = [...messages, { role: 'assistant', content: text }];
       const resultArchetype = isCompleted ? (text.match(/ВАШ СОЦИОТИП: ([\wа-яА-ЯёЁ\s]+)/i)?.[1] || null) : null;
 
       const { data: sessionData, error: updateError } = await supabase
