@@ -187,8 +187,34 @@ function getBot() {
       })
     });
 
-    const { content: aiResponse, isCompleted } = await profilerRes.json();
-    await ctx.reply(isCompleted ? `✅ ${aiResponse}` : aiResponse, { parse_mode: 'HTML' });
+    try {
+      const result = await profilerRes.json();
+      
+      if (!profilerRes.ok || result.error) {
+        throw new Error(result.error || `HTTP ${profilerRes.status}`);
+      }
+
+      const aiResponse = result.content;
+      const isCompleted = result.isCompleted;
+
+      if (!aiResponse) {
+        throw new Error('Empty AI response');
+      }
+
+      // Basic HTML escaping for peace of mind in HTML mode
+      const safeResponse = aiResponse
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      await ctx.reply(isCompleted ? `✅ ${safeResponse}` : safeResponse, { 
+        parse_mode: 'HTML',
+        ...Markup.inlineKeyboard([[Markup.button.callback('⏹ ПРЕРВАТЬ', 'cancel_induction')]])
+      });
+    } catch (e: any) {
+      console.error('Induction error:', e);
+      await ctx.reply(`❌ <b>ОШИБКА ИНДУКЦИИ</b>\n<code>${e.message}</code>\n\nПопробуйте отправить сообщение еще раз или перезапустите сессию.`, { parse_mode: 'HTML' });
+    }
   });
 
   botInstance = bot;

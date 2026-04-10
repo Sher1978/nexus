@@ -50,7 +50,7 @@ const SYSTEM_PROMPT = `
 ВАЖНО: Если ты готов выдать результат, начни сообщение с фразы "ИНДУКЦИЯ ЗАВЕРШЕНА. ВАШ СОЦИОТИП:".
 `;
 
-import { supabase } from '@/lib/supabaseClient';
+import { supabaseAdmin } from '@/lib/supabaseClient';
 
 export async function POST(req: Request) {
   try {
@@ -105,7 +105,7 @@ export async function POST(req: Request) {
       const updatedMessages = [...messages, { role: 'assistant', content: text }];
       const resultArchetype = isCompleted ? (text.match(/ВАШ СОЦИОТИП: ([\wа-яА-ЯёЁ\s]+)/i)?.[1] || null) : null;
 
-      const { data: sessionData, error: updateError } = await supabase
+      const { data: sessionData, error: updateError } = await supabaseAdmin
         .from('induction_sessions')
         .update({
           conversation: updatedMessages,
@@ -118,7 +118,7 @@ export async function POST(req: Request) {
         .single();
 
       if (isCompleted && resultArchetype && sessionData?.agent_id) {
-        await supabase
+        await supabaseAdmin
           .from('agents')
           .update({ archetype: resultArchetype })
           .eq('id', sessionData.agent_id);
