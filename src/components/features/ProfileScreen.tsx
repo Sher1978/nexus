@@ -166,7 +166,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onScanClick }) => 
           {!user?.telegram_id && (
             <Button 
               variant="glass" 
-              size="sm"
               onClick={() => window.open(`https://t.me/${process.env.NEXT_PUBLIC_BOT_USERNAME || 'NexusShadowBot'}?start=sync_${user?.id}`, '_blank')}
               className="h-8 px-4 text-[10px] border-[#0088cc]/30 text-[#0088cc] hover:bg-[#0088cc]/10"
             >
