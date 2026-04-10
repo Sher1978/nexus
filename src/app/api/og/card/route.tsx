@@ -70,8 +70,8 @@ export async function GET(request: Request) {
               </div>
             </div>
 
-            {/* Profile Info */}
-            <div style={{ display: 'flex', gap: '30px' }}>
+            {/* Profile Info & QR Section */}
+            <div style={{ display: 'flex', gap: '30px', alignItems: 'center' }}>
               {/* Photo Placeholder */}
               <div style={{ width: '120px', height: '120px', borderRadius: '30px', backgroundColor: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ width: '60px', height: '60px', borderRadius: '50%', border: '4px solid #d4af37', opacity: 0.5 }} />
@@ -86,6 +86,24 @@ export async function GET(request: Request) {
                   <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Archetype Cluster</span>
                   <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#d4af37' }}>{agent.archetype || 'UNIDENTIFIED'}</span>
                 </div>
+              </div>
+
+              {/* QR Code Section */}
+              <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                padding: '10px', 
+                backgroundColor: '#fff', 
+                borderRadius: '16px',
+                border: '2px solid #00f2ff'
+              }}>
+                <img 
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`https://t.me/humanexusbot?start=inspect_${agent.id}`)}`}
+                  alt="QR"
+                  style={{ width: '80px', height: '80px' }}
+                />
+                <span style={{ fontSize: '8px', color: '#000', fontWeight: 'bold', marginTop: '4px' }}>SCAN TO SYNC</span>
               </div>
             </div>
 

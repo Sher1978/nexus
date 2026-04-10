@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // Max allowed for Hobby plan
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || '');
 
@@ -56,7 +57,12 @@ export async function POST(req: Request) {
       ? `ГИПОТЕЗА ИЗ БЫСТРОГО ТЕСТА: ${initialHypothesis}. Используй это как точку отсчета, но не принимай на веру. Проверь её в первую очередь.\n` 
       : '';
 
-    const MODELS_TO_TRY = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
+    const MODELS_TO_TRY = [
+      "gemini-2.5-flash", 
+      "gemini-2.5-pro", 
+      "gemini-2.0-flash-lite-preview-02-05",
+      "gemini-2.0-flash"
+    ];
     let text = "";
     let lastError = null;
 
@@ -87,7 +93,7 @@ export async function POST(req: Request) {
           if (audio) {
             userParts.push({
               inlineData: {
-                mimeType: "audio/webm",
+                mimeType: "audio/ogg",
                 data: audio,
               },
             });

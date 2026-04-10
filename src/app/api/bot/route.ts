@@ -1,5 +1,5 @@
 import { Telegraf, Markup } from 'telegraf';
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseClient';
 
 const token = process.env.TELEGRAM_BOT_TOKEN || '';
@@ -7,6 +7,15 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://nexus-shers-projects
 
 // Singleton instance to prevent multiple handler registrations in dev/serverless warm starts
 let botInstance: Telegraf<any>;
+
+export const maxDuration = 60; // Max allowed for Hobby plan
+
+const LOADING_PHRASES = [
+  "🕸 <b>Теневые механизмы запущены...</b>\nАнализирую ваш Код.",
+  "🧩 <b>Синхронизация с Nexus...</b>\nРаспознаю паттерны вашей Тени.",
+  "👁 <b>Взор Тени направлен на ваши слова...</b>\nИдет глубинный поиск.",
+  "🧬 <b>Нейро-синхронизация...</b>\nТвой Код уникален, дай мне секунду."
+];
 
 function getBot() {
   if (botInstance) return botInstance;
@@ -58,6 +67,7 @@ function getBot() {
     const MAIN_MENU = Markup.inlineKeyboard([
       [Markup.button.callback('📂 ТЕНЕВОЙ КОД', 'profile'), Markup.button.callback('🧬 КАРТА ТЕНИ', 'matrix')],
       [Markup.button.callback('⚡️ УЗНАТЬ СВОЙ КОД', 'start_induction')],
+      [Markup.button.webApp('🔍 СКАНЕР (P2P)', `${APP_URL}/scan`)],
       [Markup.button.webApp('🚀 ВХОД В NEXUS', APP_URL)]
     ]);
 
@@ -92,8 +102,26 @@ function getBot() {
       } else {
         await ctx.reply(`❌ <b>ОШИБКА СИНХРОНИЗАЦИИ</b>\nНе удалось привязать профиль.`, { parse_mode: 'HTML' });
       }
+    } else if (startPayload && startPayload.startsWith('inspect_')) {
+      // 2. Handle Peer-to-Peer Scanning (Inspect another user)
+      const targetId = startPayload.replace('inspect_', '');
+      const { data: targetAgent } = await supabaseAdmin
+        .from('agents')
+        .select('*')
+        .eq('id', targetId)
+        .single();
+
+      if (targetAgent) {
+        const cardUrl = `${APP_URL}/api/og/card?id=${targetAgent.id}&t=${Date.now()}`;
+        await ctx.replyWithPhoto(cardUrl, {
+          caption: `🔍 <b>ОБНАРУЖЕН СТОРОННИЙ ТЕНЕВОЙ КОД</b>\n\n<b>Имя:</b> ${targetAgent.full_name}\n<b>Архетип:</b> ${targetAgent.archetype || 'НЕИЗВЕСТНО'}\n\n<i>Синхронизация Nexus завершена успешно.</i>`,
+          parse_mode: 'HTML'
+        });
+      } else {
+        await ctx.reply('❌ <b>ОШИБКА</b>\nТеневой Код не найден в архивах Nexus.');
+      }
     } else {
-      // 2. Auto-register if no sync payload
+      // 3. Auto-register if no payload
       await getOrCreateAgent(ctx);
     }
 
@@ -181,46 +209,60 @@ function getBot() {
     }
 
     if (!content && !audioData) return;
+    
+    // 1. Immediate UI Feedback (Fly UI)
+    const randomPhrase = LOADING_PHRASES[Math.floor(Math.random() * LOADING_PHRASES.length)];
+    const placeholderMsg = await ctx.reply(randomPhrase, { parse_mode: 'HTML' });
+    const chatId = ctx.chat.id;
+    const placeholderMsgId = placeholderMsg.message_id;
+    
     await ctx.sendChatAction('typing');
 
-    const profilerRes = await fetch(`${APP_URL}/api/profiler`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [...session.conversation, { role: 'user', content }],
-        audio: audioData,
-        sessionId: session.id
-      })
+    // 2. Async Background Processing
+    after(async () => {
+      try {
+        const profilerRes = await fetch(`${APP_URL}/api/profiler`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [...session.conversation, { role: 'user', content }],
+            audio: audioData,
+            sessionId: session.id
+          })
+        });
+
+        const result = await profilerRes.json();
+        
+        if (!profilerRes.ok || result.error) {
+          throw new Error(result.error || `HTTP ${profilerRes.status}`);
+        }
+
+        const aiResponse = result.content;
+        const isCompleted = result.isCompleted;
+
+        if (!aiResponse) {
+          throw new Error('Empty AI response');
+        }
+
+        const safeResponse = aiResponse
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+
+        const finalMsg = isCompleted ? `✅ ${safeResponse}` : safeResponse;
+
+        await bot.telegram.editMessageText(chatId, placeholderMsgId, undefined, finalMsg, {
+          parse_mode: 'HTML',
+          ...Markup.inlineKeyboard([[Markup.button.callback('⏹ ПРЕРВАТЬ', 'cancel_induction')]])
+        });
+      } catch (e: any) {
+        console.error('Background Induction error:', e);
+        await bot.telegram.editMessageText(chatId, placeholderMsgId, undefined, 
+          `❌ <b>ОШИБКА ИНДУКЦИИ</b>\n<code>${e.message}</code>\n\nТень временно недоступна. Попробуйте еще раз.`, 
+          { parse_mode: 'HTML' }
+        );
+      }
     });
-
-    try {
-      const result = await profilerRes.json();
-      
-      if (!profilerRes.ok || result.error) {
-        throw new Error(result.error || `HTTP ${profilerRes.status}`);
-      }
-
-      const aiResponse = result.content;
-      const isCompleted = result.isCompleted;
-
-      if (!aiResponse) {
-        throw new Error('Empty AI response');
-      }
-
-      // Basic HTML escaping for peace of mind in HTML mode
-      const safeResponse = aiResponse
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-
-      await ctx.reply(isCompleted ? `✅ ${safeResponse}` : safeResponse, { 
-        parse_mode: 'HTML',
-        ...Markup.inlineKeyboard([[Markup.button.callback('⏹ ПРЕРВАТЬ', 'cancel_induction')]])
-      });
-    } catch (e: any) {
-      console.error('Induction error:', e);
-      await ctx.reply(`❌ <b>ОШИБКА ИНДУКЦИИ</b>\n<code>${e.message}</code>\n\nПопробуйте отправить сообщение еще раз или перезапустите сессию.`, { parse_mode: 'HTML' });
-    }
   });
 
   botInstance = bot;
