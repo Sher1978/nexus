@@ -13,6 +13,13 @@ if (!isReady) {
 
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
+// Diagnostic check for Service Key (masked for safety)
+if (supabaseServiceKey && !supabaseServiceKey.startsWith('eyJ')) {
+  console.error('CRITICAL: SUPABASE_SERVICE_ROLE_KEY detected but has invalid format (does not start with eyJ).');
+} else if (supabaseServiceKey) {
+  console.log('SUPABASE_SERVICE_ROLE_KEY detected and formatted correctly.');
+}
+
 export const supabase = createClient(
   isReady ? supabaseUrl : 'https://placeholder.supabase.co',
   isReady ? supabaseAnonKey : 'placeholder-key'

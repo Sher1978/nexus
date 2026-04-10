@@ -22,7 +22,11 @@ function getBot() {
       .eq('telegram_id', telegramId)
       .maybeSingle();
 
-    if (agent) return agent;
+    if (agent) return { agent, error: null };
+    if (error && error.code !== 'PGRST116') {
+      console.error('Fetch agent error:', error);
+      return { agent: null, error: error.message };
+    }
 
     // Create new agent if not found
     const { data: newAgent, error: createError } = await supabaseAdmin
@@ -36,13 +40,42 @@ function getBot() {
       .select()
       .single();
 
-    if (createError) console.error('Auto-registration error:', createError);
-    return newAgent;
+    if (createError) {
+      console.error('Auto-registration error:', createError);
+      return { agent: null, error: createError.message };
+    }
+    return { agent: newAgent, error: null };
+  };
+
+  const sendMainMenu = async (ctx: any, textPrefix = '') => {
+    const firstName = (ctx.from.first_name || 'Агент').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const MENU_TEXT = textPrefix + 
+      `⚡️ <b>ВХОД В НЕЙРОСЕТЬ NEXUS ПОДТВЕРЖДЕН</b> ⚡️\n\n` +
+      `Приветствую, <b>${firstName}</b>. Ваша нейронная архитектура готова к работе.\n\n` +
+      `📡 <b>Протокол:</b> Human OS v1.0.26\n` +
+      `🛡 <b>Статус:</b> Доступ разрешен`;
+
+    const MAIN_MENU = Markup.inlineKeyboard([
+      [Markup.button.callback('📂 ПРОФИЛЬ', 'profile'), Markup.button.callback('🧬 МАТРИЦА', 'matrix')],
+      [Markup.button.callback('⚡️ НАЧАТЬ ИНДУКЦИЮ', 'start_induction')],
+      [Markup.button.webApp('🚀 ВХОД В NEXUS', APP_URL)]
+    ]);
+
+    const bgUrl = `${APP_URL}/human-os-bg.png`;
+    try {
+      await ctx.replyWithPhoto(bgUrl, { 
+        caption: MENU_TEXT, 
+        parse_mode: 'HTML', 
+        ...MAIN_MENU 
+      });
+    } catch (e) {
+      // Fallback if photo fails
+      await ctx.reply(MENU_TEXT, { parse_mode: 'HTML', ...MAIN_MENU });
+    }
   };
 
   // --- COMMANDS ---
   bot.start(async (ctx) => {
-    const firstName = (ctx.from.first_name || 'Агент').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const telegramId = String(ctx.from.id);
     
     // 1. Handle explicit sync deep link
@@ -64,25 +97,15 @@ function getBot() {
       await getOrCreateAgent(ctx);
     }
 
-    const MAIN_MENU = Markup.inlineKeyboard([
-      [Markup.button.callback('📂 ПРОФИЛЬ', 'profile'), Markup.button.callback('🧬 МАТРИЦА', 'matrix')],
-      [Markup.button.callback('⚡️ НАЧАТЬ ИНДУКЦИЮ', 'start_induction')],
-      [Markup.button.webApp('🚀 ВХОД В NEXUS', APP_URL)]
-    ]);
-
-    await ctx.reply(
-      `⚡️ <b>ВХОД В НЕЙРОСЕТЬ NEXUS ПОДТВЕРЖДЕН</b> ⚡️\n\n` +
-      `Приветствую, <b>${firstName}</b>. Ваша нейронная архитектура готова к работе.\n\n` +
-      `📡 <b>Протокол:</b> Human OS v1.0.26\n` +
-      `🛡 <b>Статус:</b> Доступ разрешен`,
-      { parse_mode: 'HTML', ...MAIN_MENU }
-    );
+    await sendMainMenu(ctx);
   });
 
   // --- ACTIONS ---
   bot.action('profile', async (ctx) => {
-    const agent = await getOrCreateAgent(ctx);
-    if (!agent) return ctx.reply('Ошибка доступа к базе данных.');
+    const { agent, error } = await getOrCreateAgent(ctx);
+    if (!agent) {
+      return ctx.reply(`❌ <b>ОШИБКА БАЗЫ ДАННЫХ</b>\n<code>${error || 'Unknown error'}</code>\n\nПроверьте настройки SUPABASE_SERVICE_ROLE_KEY в Vercel.`, { parse_mode: 'HTML' });
+    }
 
     const cardUrl = `${APP_URL}/api/og/card?id=${agent.data?.id || agent.id}&t=${Date.now()}`;
     await ctx.replyWithPhoto(cardUrl, {
@@ -93,15 +116,15 @@ function getBot() {
   });
 
   bot.action('matrix', async (ctx) => {
-    const agent = await getOrCreateAgent(ctx);
+    const { agent } = await getOrCreateAgent(ctx);
     const status = agent?.archetype ? `ACTIVE (LEVEL 26)` : 'RESTRICTED';
     await ctx.answerCbQuery();
     await ctx.reply(`🌐 <b>ACCESSING NEURAL MATRIX</b> 🌐\n\n<b>Status:</b> ${status}\n\n<i>Для управления Матрицей используйте Desktop интерфейс.</i>`, { parse_mode: 'HTML' });
   });
 
   bot.action('start_induction', async (ctx) => {
-    const agent = await getOrCreateAgent(ctx);
-    if (!agent) return;
+    const { agent } = await getOrCreateAgent(ctx);
+    if (!agent) return ctx.reply('Сначала привяжите или создайте профиль.');
 
     const { data: session } = await supabaseAdmin
       .from('induction_sessions')
@@ -120,14 +143,20 @@ function getBot() {
 
   // --- MESSAGES ---
   bot.on(['text', 'voice'], async (ctx) => {
-    const agent = await getOrCreateAgent(ctx);
+    const { agent } = await getOrCreateAgent(ctx);
     if (!agent) return;
 
     const { data: session } = await supabaseAdmin
       .from('induction_sessions')
       .select('*').eq('agent_id', agent.id).eq('is_completed', false).order('created_at', { ascending: false }).limit(1).maybeSingle();
 
-    if (!session) return;
+    if (!session) {
+      if ('text' in ctx.message && !ctx.message.text.startsWith('/')) {
+        await ctx.reply('Команда не распознана. Используйте меню для навигации или начните индукцию.');
+        await sendMainMenu(ctx);
+      }
+      return;
+    }
 
     let content = '';
     let audioData = null;
