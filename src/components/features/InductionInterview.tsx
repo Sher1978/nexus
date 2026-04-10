@@ -4,8 +4,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
 import { VoiceRecorder } from './VoiceRecorder';
-import { Send, ArrowLeft, RefreshCw } from 'lucide-react';
+import { Send, RefreshCw, Cpu, User as UserIcon } from 'lucide-react';
 import { useAuth } from './AuthProvider';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -21,19 +22,17 @@ export const InductionInterview: React.FC<InductionInterviewProps> = ({ initialC
   const { user } = useAuth();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Инициализация системы Nexus... Здравствуйте. Я ваш виртуальный типировщик. Для начала индукции скажите, кто ваш любимый персонаж из кино или книг и почему?' }
+    { role: 'assistant', content: 'INITIALIZING INTERFACE... Neural link established. Welcome. I am your Nexus Profiler. To begin our session, tell me about a person or character you deeply resonate with—and why?' }
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Initialize or Restore Session
   useEffect(() => {
     if (!user) return;
 
     const initSession = async () => {
       try {
-        // Try to get latest active session
         const res = await fetch(`/api/induction/session?agentId=${user.id}`);
         const { session } = await res.json();
 
@@ -43,7 +42,6 @@ export const InductionInterview: React.FC<InductionInterviewProps> = ({ initialC
             setMessages(session.conversation);
           }
         } else {
-          // Create new session
           const createRes = await fetch('/api/induction/session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -80,15 +78,14 @@ export const InductionInterview: React.FC<InductionInterviewProps> = ({ initialC
 
   const sendMessage = async (text: string, audioBase64?: string) => {
     if (!text.trim() && !audioBase64) return;
-    if (!sessionId) return; // Wait for session
+    if (!sessionId) return;
 
     const userMessage: Message = { 
-      role: 'user' as const, 
-      content: text || (audioBase64 ? "[Голосовой ответ]" : "") 
+      role: 'user', 
+      content: text || (audioBase64 ? "[Voice Data Captured]" : "") 
     };
     
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
+    setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setIsLoading(true);
 
@@ -97,7 +94,7 @@ export const InductionInterview: React.FC<InductionInterviewProps> = ({ initialC
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          messages: newMessages,
+          messages: [...messages, userMessage],
           audio: audioBase64,
           sessionId: sessionId,
           initialHypothesis: initialCode
@@ -111,11 +108,11 @@ export const InductionInterview: React.FC<InductionInterviewProps> = ({ initialC
       
       if (data.isCompleted) {
         const codeMatch = data.content.match(/ВАШ СОЦИОТИП: ([\wа-яА-ЯёЁ\s]+)/i);
-        setTimeout(() => onComplete(codeMatch ? codeMatch[1].trim() : 'UNKNOWN'), 3000);
+        setTimeout(() => onComplete(codeMatch ? codeMatch[1].trim() : 'UNKNOWN'), 4000);
       }
     } catch (err) {
       console.error('Interview Error:', err);
-      setMessages(prev => [...prev, { role: 'assistant', content: "Ошибка связи с системой. Пожалуйста, попробуйте еще раз." }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: "Interface sync failure. Neural signature lost. Please retry input." }]);
     } finally {
       setIsLoading(false);
     }
@@ -131,133 +128,92 @@ export const InductionInterview: React.FC<InductionInterviewProps> = ({ initialC
   };
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      height: '100%', 
-      maxHeight: '85vh',
-      gap: '1rem',
-      width: '100%',
-      maxWidth: '500px'
-    }}>
+    <div className="flex flex-col h-[75vh] w-full max-w-[500px]">
       <div 
         ref={scrollRef}
-        className="custom-scrollbar"
-        style={{ 
-          flex: 1, 
-          overflowY: 'auto', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          gap: '1.25rem',
-          padding: '1rem 0'
-        }}
+        className="flex-1 overflow-y-auto px-4 py-8 custom-scrollbar space-y-6"
       >
-        {messages.map((m, i) => (
-          <div key={i} style={{
-            alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
-            maxWidth: '85%',
-            animation: 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
-          }}>
-            <GlassCard style={{ 
-              padding: '1rem 1.25rem',
-              backgroundColor: m.role === 'user' ? 'rgba(255, 215, 0, 0.15)' : 'rgba(255, 255, 255, 0.05)',
-              border: m.role === 'user' ? '1px solid rgba(255, 215, 0, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)',
-              boxShadow: m.role === 'user' ? '0 4px 15px rgba(255,215,0,0.1)' : '0 4px 15px rgba(0,0,0,0.2)',
-              borderRadius: m.role === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
-            }}>
-              <p style={{ 
-                fontSize: '0.95rem', 
-                lineHeight: '1.5', 
-                color: 'white',
-                fontWeight: 450
-              }}>{m.content}</p>
-            </GlassCard>
-            <div style={{ 
-              fontSize: '0.65rem', 
-              marginTop: '0.4rem', 
-              opacity: 0.4, 
-              textAlign: m.role === 'user' ? 'right' : 'left',
-              textTransform: 'uppercase',
-              letterSpacing: '1px'
-            }}>
-              {m.role === 'user' ? 'Agent Input' : 'Nexus Response'}
-            </div>
-          </div>
-        ))}
+        <AnimatePresence initial={false}>
+          {messages.map((m, i) => (
+            <motion.div 
+              key={i}
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}
+            >
+              <div className="flex items-center gap-2 mb-2 px-1">
+                {m.role === 'assistant' ? (
+                  <>
+                    <Cpu size={10} className="text-accent" />
+                    <span className="text-[8px] font-black text-accent tracking-[0.2em] uppercase">Profiler System</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-[8px] font-black text-white/30 tracking-[0.2em] uppercase">Agent Signature</span>
+                    <UserIcon size={10} className="text-white/30" />
+                  </>
+                )}
+              </div>
+              <GlassCard className={`p-4 max-w-[90%] ${
+                m.role === 'user' 
+                  ? 'border-accent/40 bg-accent/5 !rounded-tr-none' 
+                  : 'border-white/10 bg-white/5 !rounded-tl-none'
+              }`}>
+                <p className="text-sm font-medium leading-relaxed tracking-tight">
+                  {m.content}
+                </p>
+              </GlassCard>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+        
         {isLoading && (
-          <div style={{ alignSelf: 'flex-start', marginLeft: '0.5rem' }}>
-            <div className="glass" style={{ padding: '0.5rem 1rem', borderRadius: '20px' }}>
-              <RefreshCw className="animate-spin text-gold" size={16} />
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center gap-3 px-1"
+          >
+            <div className="flex gap-1">
+              <span className="w-1 h-1 bg-accent rounded-full animate-bounce" />
+              <span className="w-1 h-1 bg-accent rounded-full animate-bounce [animation-delay:0.2s]" />
+              <span className="w-1 h-1 bg-accent rounded-full animate-bounce [animation-delay:0.4s]" />
             </div>
-          </div>
+            <span className="text-[8px] font-black text-accent tracking-widest uppercase italic">Analyzing Neural Patterns...</span>
+          </motion.div>
         )}
       </div>
 
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        gap: '1rem', 
-        padding: '1.25rem',
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.05)',
-        borderRadius: '24px',
-        backdropFilter: 'blur(20px)',
-        marginBottom: '1rem'
-      }}>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end' }}>
-          <textarea
-            className="glass"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="Ввод данных..."
-            style={{
-              flex: 1,
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.15)',
-              borderRadius: '18px',
-              padding: '0.9rem 1.1rem',
-              color: 'white',
-              fontSize: '0.95rem',
-              resize: 'none',
-              height: '52px',
-              maxHeight: '120px',
-              transition: 'all 0.3s ease'
-            }}
-            onFocus={(e) => {
-              e.target.style.background = 'rgba(255,255,255,0.08)';
-              e.target.style.borderColor = 'rgba(255,255,255,0.3)';
-            }}
-            onBlur={(e) => {
-              e.target.style.background = 'rgba(255,255,255,0.05)';
-              e.target.style.borderColor = 'rgba(255,255,255,0.15)';
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage(inputText);
-              }
-            }}
-          />
-          <Button 
-            variant="primary" 
-            onClick={() => sendMessage(inputText)}
-            style={{ width: '52px', height: '52px', borderRadius: '18px', padding: 0, minWidth: '52px' }}
-            disabled={!inputText.trim() || isLoading}
-          >
-            <Send size={22} />
-          </Button>
-        </div>
-        
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1rem' }}>
-          <VoiceRecorder onRecordingComplete={handleVoice} isProcessing={isLoading} />
-        </div>
+      <div className="p-4 pt-0">
+        <GlassCard className="p-4 border-white/10 flex flex-col gap-4">
+          <div className="flex gap-3 items-end">
+            <textarea
+              className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 text-sm font-medium resize-none focus:border-accent/50 outline-none transition-all h-[52px]"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              placeholder="Input response..."
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage(inputText);
+                }
+              }}
+            />
+            <button 
+              onClick={() => sendMessage(inputText)}
+              disabled={!inputText.trim() || isLoading}
+              className="w-[52px] h-[52px] rounded-xl bg-accent text-black flex items-center justify-center disabled:opacity-30 transition-all hover:scale-105 active:scale-95 shrink-0"
+            >
+              <Send size={20} />
+            </button>
+          </div>
+          
+          <div className="border-t border-white/5 pt-4">
+            <VoiceRecorder onRecordingComplete={handleVoice} isProcessing={isLoading} />
+          </div>
+        </GlassCard>
       </div>
 
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(12px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
+      <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 4px;
         }
@@ -265,10 +221,12 @@ export const InductionInterview: React.FC<InductionInterviewProps> = ({ initialC
           background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.05);
           border-radius: 10px;
         }
       `}</style>
     </div>
   );
 };
+
+export default InductionInterview;

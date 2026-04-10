@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import styles from '../page.module.css';
 import { QuickTest } from '@/components/features/QuickTest';
 import { InductionInterview } from '@/components/features/InductionInterview';
 import { InductionResult } from '@/components/features/InductionResult';
 import { InductionGateway } from '@/components/features/InductionGateway';
 import { ManualTypeSelection } from '@/components/features/ManualTypeSelection';
 import { useRouter } from 'next/navigation';
+import TopNav from '@/components/ui/TopNav';
 
 type FlowStep = 'GATEWAY' | 'MANUAL' | 'TEST' | 'INTERVIEW' | 'RESULT';
 
@@ -30,7 +30,7 @@ export default function InductionPage() {
 
   const handleTestComplete = (code: string) => {
     setInitialCode(code);
-    setStep('INTERVIEW'); // Quick test leads to AI verification
+    setStep('INTERVIEW');
   };
 
   const handleInterviewComplete = (code: string) => {
@@ -44,33 +44,52 @@ export default function InductionPage() {
     else router.push('/');
   };
 
+  const getStepTitle = () => {
+    switch(step) {
+      case 'GATEWAY': return "SYSTEM INDUCTION";
+      case 'MANUAL': return "IDENTITY SELECTION";
+      case 'TEST': return "NEURAL ASSESSMENT";
+      case 'INTERVIEW': return "AI VERIFICATION";
+      case 'RESULT': return "INDUCTION SUCCESS";
+      default: return "INDUCTION";
+    }
+  };
+
   return (
-    <main className={styles.main}>
-      {step === 'GATEWAY' && (
-        <InductionGateway onSelect={handleGatewaySelect} />
-      )}
-
-      {step === 'MANUAL' && (
-        <ManualTypeSelection onSelect={handleManualComplete} onBack={handleBack} />
-      )}
+    <main className="flex flex-col items-center min-h-screen bg-black text-white">
+      <TopNav 
+        title={getStepTitle()} 
+        showBack={true} 
+        onBack={handleBack} 
+      />
       
-      {step === 'TEST' && (
-        <QuickTest onComplete={handleTestComplete} />
-      )}
-      
-      {step === 'INTERVIEW' && (
-        <InductionInterview 
-          initialCode={initialCode}
-          onComplete={handleInterviewComplete} 
-        />
-      )}
+      <div className="w-full pt-[60px] flex flex-col items-center">
+        {step === 'GATEWAY' && (
+          <InductionGateway onSelect={handleGatewaySelect} />
+        )}
 
-      {step === 'RESULT' && finalCode && (
-        <InductionResult 
-          code={finalCode} 
-          onBack={handleBack} 
-        />
-      )}
+        {step === 'MANUAL' && (
+          <ManualTypeSelection onSelect={handleManualComplete} onBack={handleBack} />
+        )}
+        
+        {step === 'TEST' && (
+          <QuickTest onComplete={handleTestComplete} />
+        )}
+        
+        {step === 'INTERVIEW' && (
+          <InductionInterview 
+            initialCode={initialCode}
+            onComplete={handleInterviewComplete} 
+          />
+        )}
+
+        {step === 'RESULT' && finalCode && (
+          <InductionResult 
+            code={finalCode} 
+            onBack={handleBack} 
+          />
+        )}
+      </div>
     </main>
   );
 }

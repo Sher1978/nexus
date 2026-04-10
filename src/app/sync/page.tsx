@@ -1,31 +1,30 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import styles from '../page.module.css';
 import { QRScanner } from '@/components/features/QRScanner';
 import { SyncTabs, SyncTab } from '@/components/features/SyncTabs';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Button } from '@/components/ui/Button';
-import { Shield, Zap, Target, ArrowLeft, RefreshCw, AlertTriangle, Users } from 'lucide-react';
-import Link from 'next/link';
+import { Zap, RefreshCw, AlertTriangle, Users } from 'lucide-react';
 import { useAuth } from '@/components/features/AuthProvider';
 import { supabase } from '@/lib/supabaseClient';
 import { getProtocol, SHADOW_CODE_NAMES, PROTOCOL_NAMES, TYPE_QUADRA, QUADRA_DATA, QUADRA_COMPATIBILITY } from '@/lib/shadowCode';
 import { SYNC_INSIGHTS } from '@/lib/mbtiSyncData';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { QuadraCompatibility } from '@/components/features/QuadraCompatibility';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
+import TopNav from '@/components/ui/TopNav';
 
 function SyncContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [partner, setPartner] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<SyncTab>('business');
   const [showQuadraDossier, setShowQuadraDossier] = useState(false);
 
-  // Load partner from URL if present (e.g. from QR scan redirect)
   useEffect(() => {
     const partnerId = searchParams.get('partnerId');
     if (partnerId && !partner) {
@@ -38,7 +37,6 @@ function SyncContent() {
     setLoading(true);
     setError(null);
     try {
-      // Try to find by UUID first (primary key)
       const { data, error: sbError } = await supabase
         .from('agents')
         .select('*')
@@ -47,7 +45,6 @@ function SyncContent() {
       
       let finalData = data;
 
-      // Fallback to searching by telegram_id if scan was a raw TG ID
       if (sbError || !data) {
         const { data: tgData } = await supabase
           .from('agents')
@@ -59,15 +56,15 @@ function SyncContent() {
 
       if (finalData) {
         if (!finalData.archetype) {
-          setError('НЕЙРОННАЯ АРХИТЕКТУРА АГЕНТА НЕ ИНИЦИАЛИЗИРОВАНА');
+          setError('NEURAL ARCHITECTURE NOT INITIALIZED');
         } else {
           setPartner(finalData);
         }
       } else {
-        setError('АГЕНТ НЕ НАЙДЕН В БАЗЕ NEXUS');
+        setError('AGENT NOT FOUND IN NEXUS DATABASE');
       }
     } catch (err) {
-      setError('ОШИБКА НЕЙРОННОЙ СВЯЗИ');
+      setError('CONNECTION FAILURE');
     } finally {
       setLoading(false);
     }
@@ -84,7 +81,6 @@ function SyncContent() {
     const pair1 = `${userQuadra}+${partnerQuadra}`;
     const pair2 = `${partnerQuadra}+${userQuadra}`;
     
-    // Check for same quadra
     if (userQuadra === partnerQuadra) {
       return QUADRA_COMPATIBILITY.find(c => c.pair.includes('Внутри одной квадры'));
     }
@@ -95,158 +91,150 @@ function SyncContent() {
   const quadraRel = getQuadraRelation();
   const userQData = userQuadra ? QUADRA_DATA[userQuadra] : null;
 
+  const handleBack = () => {
+    if (partner) setPartner(null);
+    else router.push('/');
+  };
+
   return (
-    <div style={{ width: '100%', maxWidth: '440px' }}>
-      <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', padding: '0 1rem' }}>
-        <Link href="/">
-          <div className="glass" style={{ width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <ArrowLeft size={20} className="text-gold" />
+    <div className="w-full max-w-[440px] px-4">
+      <TopNav 
+        title={partner ? "SYNC ANALYSIS" : "SCAN AGENT"} 
+        showBack={true} 
+        onBack={handleBack} 
+      />
+      
+      <div className="pt-20">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center pt-24">
+            <div className="w-20 h-20 rounded-full border-2 border-accent border-t-transparent animate-spin mb-6" />
+            <p className="text-[10px] font-black tracking-[0.2em] text-accent uppercase">Analyzing Neural Bridge...</p>
           </div>
-        </Link>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <span style={{ fontSize: '0.6rem', fontWeight: 800, letterSpacing: '2px', opacity: 0.5, textTransform: 'uppercase' }}>Tactical Sync</span>
-          <h1 className="text-gold" style={{ fontSize: '1.4rem', fontWeight: 900, margin: 0, letterSpacing: '-1px' }}>СИНХРОНИЗАЦИЯ</h1>
-        </div>
+        ) : !partner ? (
+          <div className="flex flex-col items-center">
+             <div className="w-32 h-32 rounded-full border border-accent/20 flex items-center justify-center mb-10 relative">
+                <div className="absolute inset-0 border border-accent/10 rounded-full animate-ping" />
+                <Zap size={40} className="text-accent/40" />
+             </div>
+             
+             {error && (
+               <div className="w-full bg-red-500/10 border border-red-500/20 p-4 rounded-xl mb-8 flex items-center gap-3">
+                 <AlertTriangle size={18} className="text-red-500 shrink-0" />
+                 <span className="text-[10px] font-black text-red-500 uppercase leading-tight">{error}</span>
+               </div>
+             )}
+
+             <p className="text-sm text-white/40 font-bold mb-8 uppercase tracking-widest text-center">
+               Waiting for Tactical Code Signature...
+             </p>
+             <div className="w-full">
+               <QRScanner onScan={handleScan} />
+             </div>
+          </div>
+        ) : (
+          <div className="fade-in pb-24">
+            <div className="flex items-center justify-between gap-4 mb-8">
+               <div className="flex-1 glass p-4 text-center border-b-2" style={{ borderBottomColor: userQData?.color || 'var(--accent)' }}>
+                  <div className="text-[10px] font-black opacity-30 mb-1">YOU</div>
+                  <div className="text-lg font-black tracking-tighter" style={{ color: userQData?.color || 'var(--accent)' }}>{user?.archetype}</div>
+                  <div className="text-[8px] font-bold opacity-30 uppercase tracking-widest">{userQuadra && QUADRA_DATA[userQuadra].name}</div>
+               </div>
+               <div className="shrink-0">
+                  <Zap size={20} className="text-accent animate-pulse" />
+               </div>
+               <div className="flex-1 glass p-4 text-center border-b-2" style={{ borderBottomColor: partnerQuadra ? QUADRA_DATA[partnerQuadra].color : 'var(--ios-silver)' }}>
+                  <div className="text-[10px] font-black opacity-30 mb-1">AGENT</div>
+                  <div className="text-lg font-black tracking-tighter" style={{ color: partnerQuadra ? QUADRA_DATA[partnerQuadra].color : 'var(--ios-silver)' }}>{partner?.archetype}</div>
+                  <div className="text-[8px] font-bold opacity-30 uppercase tracking-widest">{partnerQuadra && QUADRA_DATA[partnerQuadra].name}</div>
+               </div>
+            </div>
+
+            <SyncTabs activeTab={activeTab} onChange={setActiveTab} />
+            
+            <div className="flex flex-col gap-5 mt-6">
+              <GlassCard className="p-0 border-t-2 border-t-accent overflow-hidden">
+                <div className="p-6">
+                  <div className="flex gap-2 mb-4">
+                    <div className="glass px-3 py-1 text-[10px] font-black text-accent uppercase tracking-widest">
+                      {partner.full_name?.split(' ')[0] || 'AGENT'}
+                    </div>
+                    <div className="glass px-3 py-1 text-[10px] font-black uppercase tracking-widest opacity-40">
+                      {protocol && PROTOCOL_NAMES[protocol].split(' (')[0]}
+                    </div>
+                  </div>
+                  <h4 className="text-xl font-black mb-3 italic tracking-tight uppercase">{insights?.label || 'Compatibility Analysis'}</h4>
+                  <p className="text-sm text-white/70 leading-relaxed font-medium">
+                    {activeTab === 'business' && insights?.business}
+                    {activeTab === 'friendship' && insights?.friendship}
+                    {activeTab === 'personal' && insights?.personal}
+                  </p>
+                </div>
+              </GlassCard>
+
+              {quadraRel && (
+                <GlassCard className="p-6 border-l-4" style={{ borderLeftColor: userQData?.color || 'var(--accent)' }}>
+                   <div className="mb-4">
+                      <div className="text-[8px] font-black opacity-30 uppercase tracking-widest mb-1">RESONANCE LEVEL</div>
+                      <div className="text-xl font-black text-accent uppercase italic">{quadraRel.level}</div>
+                   </div>
+                   
+                   <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div>
+                         <div className="text-[8px] font-black opacity-30 uppercase tracking-[0.2em] mb-2">ADVANTAGES</div>
+                         <div className="text-xs text-white/70 leading-normal">{quadraRel.strengths}</div>
+                      </div>
+                      <div>
+                         <div className="text-[8px] font-black opacity-30 uppercase tracking-[0.2em] mb-2">RECOMMS</div>
+                         <div className="text-xs text-white/70 leading-normal">{quadraRel.advice}</div>
+                      </div>
+                   </div>
+
+                   <Button 
+                     variant="glass" 
+                     onClick={() => setShowQuadraDossier(true)}
+                     className="w-full py-4 font-black text-[10px] tracking-widest uppercase gap-2"
+                   >
+                     QUADRA DOSSIER <Users size={14} />
+                   </Button>
+                </GlassCard>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <GlassCard className="p-6 text-center">
+                  <div className="text-[8px] font-black opacity-30 uppercase tracking-widest mb-2">ENERGY FLOW</div>
+                  <div className="text-3xl font-black text-accent tracking-tighter italic">
+                    {insights?.score || '--'}%
+                  </div>
+                </GlassCard>
+                <GlassCard className="p-6 text-center">
+                  <div className="text-[8px] font-black opacity-30 uppercase tracking-widest mb-2">RESONANCE</div>
+                  <div className="text-3xl font-black text-white tracking-tighter italic">
+                    {insights ? Math.floor(insights.score * 0.9 + 5) : '--'}%
+                  </div>
+                </GlassCard>
+              </div>
+
+              {insights?.protocols && (
+                <div className="mt-4">
+                  <h4 className="text-[10px] font-black opacity-30 uppercase tracking-[0.3em] mb-4">Tactical Protocols</h4>
+                  <div className="flex flex-col gap-3">
+                    {insights.protocols.map((p, i) => (
+                      <div key={i} className={`glass p-5 text-sm font-medium text-white/80 border-l-2 ${i === 0 ? 'border-l-accent' : 'border-l-white/10'}`}>
+                        <span className="text-accent font-black mr-2 italic">0{i + 1}</span> {p}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <Button variant="glass" className="mt-8 py-5 flex items-center justify-center gap-3 opacity-50 hover:opacity-100 font-black text-xs tracking-widest uppercase" onClick={() => setPartner(null)}>
+                TERMINATE SESSION <RefreshCw size={16} />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {loading ? (
-        <div style={{ textAlign: 'center', marginTop: '15vh' }}>
-          <div className="radar-pulse" style={{ width: '100px', height: '100px', borderRadius: '50%', border: '2px solid var(--ios-gold)', margin: '0 auto 2rem' }}></div>
-          <p className="text-gold" style={{ fontWeight: 800, letterSpacing: '2px', fontSize: '0.7rem' }}>АНАЛИЗ НЕЙРОННОЙ СВЯЗИ...</p>
-        </div>
-      ) : !partner ? (
-        <div style={{ textAlign: 'center', marginTop: '10vh', padding: '0 1rem' }}>
-          <div className="radar-pulse" style={{ 
-            width: '120px', 
-            height: '120px', 
-            borderRadius: '50%', 
-            border: '2px solid var(--ios-gold)', 
-            margin: '0 auto 2.5rem',
-            opacity: 0.3
-          }}></div>
-          
-          {error && (
-            <div style={{ color: '#ff4d4d', fontSize: '0.7rem', fontWeight: 800, marginBottom: '2rem', letterSpacing: '1px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: 'rgba(255,77,77,0.1)', padding: '1rem', borderRadius: '12px' }}>
-              <AlertTriangle size={14} /> {error}
-            </div>
-          )}
-
-          <p style={{ opacity: 0.6, marginBottom: '2rem', fontWeight: 500, letterSpacing: '0.5px', fontSize: '0.9rem' }}>
-            ОЖИДАНИЕ ТАКТИЧЕСКОГО КОДА...
-          </p>
-          <div style={{ width: '100%' }}>
-            <QRScanner onScan={handleScan} />
-          </div>
-        </div>
-      ) : (
-        <div style={{ padding: '0 1rem' }} className="fade-in">
-          {/* Sync Bridge */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '2rem' }}>
-             <div className="glass" style={{ padding: '1rem', textAlign: 'center', flex: 1, borderBottom: `2px solid ${userQData?.color || 'var(--ios-gold)'}` }}>
-                <div style={{ fontSize: '0.55rem', opacity: 0.5, marginBottom: '0.25rem' }}>ВЫ</div>
-                <div style={{ fontWeight: 900, fontSize: '1.1rem', color: userQData?.color || 'var(--ios-gold)' }}>{user?.archetype}</div>
-                {userQuadra && <div style={{ fontSize: '0.5rem', opacity: 0.5 }}>{QUADRA_DATA[userQuadra].name}</div>}
-             </div>
-             <div className="sync-connector" style={{ position: 'relative', width: '40px', display: 'flex', justifyContent: 'center' }}>
-                <Zap size={20} className="text-gold" style={{ animation: 'pulse 2s infinite' }} />
-             </div>
-             <div className="glass" style={{ padding: '1rem', textAlign: 'center', flex: 1, borderBottom: `2px solid ${partnerQuadra ? QUADRA_DATA[partnerQuadra].color : 'var(--ios-silver)'}` }}>
-                <div style={{ fontSize: '0.55rem', opacity: 0.5, marginBottom: '0.25rem' }}>ПАРТНЕР</div>
-                <div style={{ fontWeight: 900, fontSize: '1.1rem', color: partnerQuadra ? QUADRA_DATA[partnerQuadra].color : 'var(--ios-silver)' }}>{partner?.archetype}</div>
-                {partnerQuadra && <div style={{ fontSize: '0.5rem', opacity: 0.5 }}>{QUADRA_DATA[partnerQuadra].name}</div>}
-             </div>
-          </div>
-
-          <SyncTabs activeTab={activeTab} onChange={setActiveTab} />
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <GlassCard 
-              title={insights?.label || 'АНАЛИЗ СОВМЕСТИМОСТИ'}
-              style={{ borderTop: `2px solid ${insights?.score && insights.score > 80 ? 'var(--ios-gold)' : 'rgba(255,255,255,0.1)'}` }}
-            >
-              <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                <div className="glass" style={{ padding: '6px 12px', fontSize: '0.65rem', fontWeight: 800, color: 'var(--ios-gold)', letterSpacing: '1px' }}>
-                  {partner.full_name?.split(' ')[0].toUpperCase() || 'AGENT'} UNIT
-                </div>
-                <div className="glass" style={{ padding: '6px 12px', fontSize: '0.65rem', fontWeight: 800, letterSpacing: '1px', opacity: 0.7 }}>
-                  {protocol && PROTOCOL_NAMES[protocol].split(' (')[0].toUpperCase()}
-                </div>
-              </div>
-              <p style={{ fontSize: '0.95rem', opacity: 0.8, lineHeight: '1.6', color: 'var(--ios-silver)', minHeight: '80px' }}>
-                {activeTab === 'business' && insights?.business}
-                {activeTab === 'friendship' && insights?.friendship}
-                {activeTab === 'personal' && insights?.personal}
-              </p>
-            </GlassCard>
-
-            {/* Quadra Resonance Section */}
-            {quadraRel && (
-              <GlassCard 
-                title="КВАДРОВЫЙ РЕЗОНАНС" 
-                style={{ borderLeft: `4px solid ${userQData?.color || 'var(--ios-gold)'}` }}
-              >
-                 <div style={{ marginBottom: '1rem' }}>
-                    <div style={{ fontSize: '0.6rem', fontWeight: 800, opacity: 0.5, textTransform: 'uppercase', marginBottom: '4px' }}>УРОВЕНЬ</div>
-                    <div style={{ fontWeight: 900, color: 'var(--ios-gold)', fontSize: '1.2rem' }}>{quadraRel.level.toUpperCase()}</div>
-                 </div>
-                 
-                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-                    <div>
-                       <div style={{ fontSize: '0.55rem', fontWeight: 800, opacity: 0.4, marginBottom: '4px' }}>СИЛЬНЫЕ СТОРОНЫ</div>
-                       <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>{quadraRel.strengths}</div>
-                    </div>
-                    <div>
-                       <div style={{ fontSize: '0.55rem', fontWeight: 800, opacity: 0.4, marginBottom: '4px' }}>РЕКОМЕНДАЦИИ</div>
-                       <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>{quadraRel.advice}</div>
-                    </div>
-                 </div>
-
-                 <Button 
-                   variant="glass" 
-                   onClick={() => setShowQuadraDossier(true)}
-                   style={{ width: '100%', fontSize: '0.7rem', gap: '0.5rem', fontWeight: 800 }}
-                 >
-                   ПОЛНЫЙ КВАДРОВЫЙ ДОСЬЕ <Users size={14} />
-                 </Button>
-              </GlassCard>
-            )}
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-              <GlassCard style={{ padding: '1.5rem', textAlign: 'center' }}>
-                <div style={{ fontSize: '0.6rem', fontWeight: 800, opacity: 0.5, textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '1px' }}>ЭНЕРГООБМЕН</div>
-                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--ios-gold)' }}>
-                  {insights?.score || '--'}%
-                </div>
-              </GlassCard>
-              <GlassCard style={{ padding: '1.5rem', textAlign: 'center' }}>
-                <div style={{ fontSize: '0.6rem', fontWeight: 800, opacity: 0.5, textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '1px' }}>РЕЗОНАНС</div>
-                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'white' }}>
-                  {insights ? Math.floor(insights.score * 0.9 + 5) : '--'}%
-                </div>
-              </GlassCard>
-            </div>
-
-            {insights?.protocols && (
-              <div style={{ marginTop: '0.5rem' }}>
-                <h4 style={{ fontSize: '0.7rem', fontWeight: 800, opacity: 0.4, marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '2px' }}>ТАКТИЧЕСКИЕ ПРОТОКОЛЫ</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {insights.protocols.map((p, i) => (
-                    <div key={i} className="glass" style={{ padding: '1.25rem', fontSize: '0.85rem', color: 'var(--ios-silver)', borderLeft: i === 0 ? '3px solid var(--ios-gold)' : '1px solid rgba(255,255,255,0.1)' }}>
-                      <span style={{ color: 'var(--ios-gold)', fontWeight: 800, marginRight: '0.5rem' }}>0{i + 1}</span> {p}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <Button variant="glass" style={{ marginTop: '2rem', width: '100%', opacity: 0.6, gap: '0.75rem' }} onClick={() => setPartner(null)}>
-              ПРЕРВАТЬ СЕАНС <RefreshCw size={16} />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Quadra Dossier Overlay */}
       <AnimatePresence>
         {showQuadraDossier && userQuadra && (
           <QuadraCompatibility 
@@ -261,8 +249,8 @@ function SyncContent() {
 
 export default function SyncPage() {
   return (
-    <main className={styles.main} style={{ paddingBottom: '2rem' }}>
-      <Suspense fallback={<div>Loading...</div>}>
+    <main className="flex flex-col items-center min-h-screen bg-black">
+      <Suspense fallback={<div className="pt-24 text-accent font-black">INITIALIZING...</div>}>
         <SyncContent />
       </Suspense>
     </main>

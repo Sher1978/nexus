@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { SHADOW_CODE_NAMES, TYPE_QUADRA, QUADRA_DATA } from '@/lib/shadowCode';
 import { ArchetypeAnalysis } from './ArchetypeAnalysis';
@@ -5,7 +7,7 @@ import { IdentityCard } from './IdentityCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QuadraCompatibility } from './QuadraCompatibility';
 import { useAuth } from './AuthProvider';
-import { Info, Share2, ChevronUp, Scan } from 'lucide-react';
+import { Info, Share2, ChevronUp, Scan, Fingerprint, Shield, Zap } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { GlassCard } from '../ui/GlassCard';
 
@@ -31,164 +33,144 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onScanClick }) => 
       setTimeout(() => {
         setIsAuditing(false);
         setShowAnalysis(true);
-      }, 2000);
+      }, 1500);
     } else {
       setShowAnalysis(!showAnalysis);
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { staggerChildren: 0.1 } }
+  };
+
   return (
-    <div style={{ width: '100%', maxWidth: '440px', padding: '1rem', position: 'relative' }}>
-      {/* Top Profile Section with Stories Ring */}
-      <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-          <div className="stories-ring" style={{ '--ring-color': quadraInfo?.color } as any}>
-            <div className="stories-inner">
-              <div style={{ 
-                width: '80px', 
-                height: '80px', 
-                borderRadius: '50%', 
-                background: quadraInfo ? `${quadraInfo.color}20` : 'rgba(255,255,255,0.05)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '2rem',
-                border: `1px solid ${quadraInfo?.color || 'transparent'}`
-              }}>
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="w-full max-w-[440px] px-4 pt-0 pb-32 space-y-8"
+    >
+      {/* Top Profile Section */}
+      <section className="flex flex-col items-center pt-4">
+        <div className="relative group mb-6">
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-[-8px] border border-dashed rounded-full"
+            style={{ borderColor: quadraInfo?.color || 'rgba(255,255,255,0.1)' }}
+          />
+          <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden relative shadow-2xl">
+            {tgUser?.photo_url ? (
+              <img src={tgUser.photo_url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-3xl font-black text-white/20">
                 {tgUser?.first_name?.[0] || 'A'}
-              </div>
+              </span>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-center pb-2">
+              <div className="w-1 h-3 bg-accent rounded-full animate-pulse" />
             </div>
           </div>
         </div>
 
-        <h2 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '0.2rem', letterSpacing: '-1px' }}>
-          {tgUser?.first_name || 'Anonymous Agent'}
-        </h2>
-        
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
-          <div className="agent-id-badge">
-            ID: {nexusId.slice(0, 8).toUpperCase()}
+        <div className="text-center space-y-2">
+          <h2 className="text-2xl font-black tracking-tight">
+            {tgUser?.first_name || 'Anonymous Agent'}
+          </h2>
+          <div className="flex items-center justify-center gap-2">
+            <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded-md text-[8px] font-black tracking-widest text-white/40">
+              ID: {nexusId.slice(0, 8).toUpperCase()}
+            </span>
+            {quadraInfo && (
+              <motion.button 
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowQuadraDossier(true)}
+                className="flex items-center gap-1.5 px-3 py-1 bg-accent/10 border border-accent/20 rounded-full text-[9px] font-black tracking-wider text-accent uppercase"
+              >
+                {quadraInfo.name} Quadra <Info size={10} />
+              </motion.button>
+            )}
           </div>
-          {quadraInfo && (
-            <motion.div 
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowQuadraDossier(true)}
-              style={{ 
-                background: `${quadraInfo.color}20`, 
-                border: `1px solid ${quadraInfo.color}40`,
-                color: quadraInfo.color,
-                padding: '0.3rem 0.8rem',
-                borderRadius: '20px',
-                fontSize: '0.65rem',
-                fontWeight: 800,
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem'
-              }}
-            >
-              Квадра {quadraInfo.name} <Info size={12} />
-            </motion.div>
-          )}
         </div>
-      </div>
+      </section>
 
-      {/* Premium Identity Card Section */}
+      {/* Primary Status Card */}
       {!showAnalysis && (
-        <div style={{ marginBottom: '2.5rem' }} className="fade-in">
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
           <IdentityCard 
             name={tgUser?.first_name || 'Anonymous'} 
             archetype={code} 
             nexusId={nexusId} 
           />
-          <div style={{ 
-            marginTop: '1.2rem', 
-            textAlign: 'center', 
-            fontSize: '0.7rem', 
-            opacity: 0.4,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem'
-          }}>
-            <Share2 size={12} /> TAP CARD TO ROTATE • SHARE WITH AGENTS
+          <div className="flex items-center justify-center gap-2 mt-4 text-[9px] font-black text-white/20 tracking-[0.2em] uppercase italic">
+            <Fingerprint size={12} className="opacity-50" />
+            System signature encrypted
           </div>
-        </div>
+        </motion.div>
       )}
 
-      {/* Stats / Audit Section */}
-      <GlassCard style={{ 
-        marginBottom: '1.5rem', 
-        textAlign: 'center', 
-        padding: '1.5rem 1rem',
-        borderTop: quadraInfo ? `2px solid ${quadraInfo.color}` : undefined
-      }}>
-        <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '3px', opacity: 0.5, marginBottom: '0.75rem', fontWeight: 800 }}>
-          Human OS Architecture
-        </div>
-        <div className="text-gold" style={{ 
-          fontSize: '2rem', 
-          fontWeight: 900, 
-          marginBottom: '0.5rem', 
-          lineHeight: 1,
-          backgroundImage: quadraInfo ? `linear-gradient(135deg, ${quadraInfo.color} 0%, #ffffff 100%)` : undefined,
-          WebkitBackgroundClip: quadraInfo ? 'text' : undefined,
-          WebkitTextFillColor: quadraInfo ? 'transparent' : undefined
-        }}>
-          {typeName.toUpperCase()}
-        </div>
-        
-        <Button 
-          variant="glass" 
-          onClick={handleToggleAnalysis}
-          style={{ 
-            marginTop: '1.5rem', 
-            width: '100%', 
-            fontSize: '0.8rem', 
-            fontWeight: 800, 
-            gap: '0.5rem',
-            borderColor: showAnalysis ? (quadraInfo?.color || 'var(--ios-gold)') : undefined
-          }}
-        >
-          {isAuditing ? 'АНАЛИЗ СИСТЕМЫ...' : showAnalysis ? (
-            <>СКРЫТЬ АНАЛИЗ <ChevronUp size={16} /></>
-          ) : (
-            <>ПОЛНЫЙ АУДИТ ТИПА <Info size={16} /></>
-          )}
-        </Button>
-      </GlassCard>
-
-      <AnimatePresence>
-        {showAnalysis && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            style={{ marginBottom: '2rem', overflow: 'hidden' }}
+      {/* Analysis Interface */}
+      <section className="space-y-4">
+        <GlassCard className={`p-8 text-center transition-all duration-500 overflow-hidden ${showAnalysis ? 'border-accent/30' : 'border-white/5'}`}>
+          <div className="text-[10px] font-black tracking-[0.4em] text-white/30 uppercase mb-4">
+            Human OS Architecture
+          </div>
+          <h3 className="text-4xl font-black tracking-tighter mb-8" style={{ color: quadraInfo?.color || '#fff' }}>
+            {typeName.toUpperCase()}
+          </h3>
+          
+          <Button 
+            variant="glass" 
+            onClick={handleToggleAnalysis}
+            className="w-full h-14 font-black tracking-widest text-xs gap-3 border-white/10 hover:border-accent/50 group"
           >
-            <ArchetypeAnalysis archetype={code} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {isAuditing ? (
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-accent rounded-full animate-ping" />
+                SYSTEM AUDIT IN PROGRESS...
+              </div>
+            ) : showAnalysis ? (
+              <>TERMINATE ANALYSIS <ChevronUp size={16} className="text-accent" /></>
+            ) : (
+              <>INITIATE FULL AUDIT <Info size={16} className="group-hover:text-accent" /></>
+            )}
+          </Button>
+        </GlassCard>
 
-      <Button 
-        variant="primary" 
-        onClick={onScanClick}
-        style={{ 
-          width: '100%', 
-          padding: '1.4rem', 
-          gap: '0.75rem', 
-          marginBottom: '2rem',
-          boxShadow: `0 10px 30px ${quadraInfo?.color}30`,
-          background: quadraInfo?.color 
-        }}
-      >
-        <Scan size={20} /> СКАНЕР АГЕНТА
-      </Button>
+        <AnimatePresence>
+          {showAnalysis && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: 'auto' }}
+              exit={{ opacity: 0, y: -20, height: 0 }}
+              className="overflow-hidden"
+            >
+              <ArchetypeAnalysis archetype={code} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </section>
 
-      {/* Quadra Dossier Overlay */}
+      {/* Action Section */}
+      <section className="pt-4">
+        <Button 
+          variant="primary" 
+          onClick={onScanClick}
+          className="w-full h-16 rounded-2xl bg-accent text-black font-black tracking-widest text-sm relative overflow-hidden group shadow-[0_20px_40px_rgba(var(--gold-rgb),0.3)]"
+          style={{ 
+            backgroundColor: quadraInfo?.color,
+            boxShadow: quadraInfo ? `0 20px 40px ${quadraInfo.color}30` : undefined
+          } as any}
+        >
+          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
+          <div className="relative flex items-center justify-center gap-3">
+            <Scan size={20} /> AGENT SCAN PROTOCOL
+          </div>
+        </Button>
+      </section>
+
+      {/* Overlay Screens */}
       <AnimatePresence>
         {showQuadraDossier && quadra && (
           <QuadraCompatibility 
@@ -197,7 +179,30 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onScanClick }) => 
           />
         )}
       </AnimatePresence>
-    </div>
+
+      <style jsx global>{`
+        .stories-ring {
+          position: relative;
+          padding: 4px;
+          border-radius: 50%;
+          background: linear-gradient(45deg, var(--ring-color, #fff), transparent);
+          animation: rotate 10s linear infinite;
+        }
+        @keyframes rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .agent-id-badge {
+          font-size: 0.7rem;
+          font-weight: 800;
+          color: rgba(255,255,255,0.4);
+          background: rgba(255,255,255,0.05);
+          padding: 0.2rem 0.6rem;
+          border-radius: 4px;
+          letter-spacing: 1px;
+        }
+      `}</style>
+    </motion.div>
   );
 };
 

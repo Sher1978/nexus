@@ -3,39 +3,40 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { Shield, ArrowRight, Check } from 'lucide-react';
+import { Shield, ArrowRight, Check, Zap } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const DILEMMAS = [
   {
     id: 'ei',
     title: 'Откуда вы берете энергию?',
     options: [
-      { label: 'Мир и люди (Экстраверсия)', value: 'E', icon: '🌍' },
-      { label: 'Тишина и мысли (Интроверсия)', value: 'I', icon: '🧘' }
+      { label: 'Мир и люди (Экстраверсия)', value: 'E', description: 'Активное взаимодействие с внешним миром' },
+      { label: 'Тишина и мысли (Интроверсия)', value: 'I', description: 'Концентрация на внутренних процессах' }
     ]
   },
   {
     id: 'sn',
     title: 'Как вы собираете информацию?',
     options: [
-      { label: 'Факты и детали (Сенсорика)', value: 'S', icon: '📊' },
-      { label: 'Смыслы и интуиция (Интуиция)', value: 'N', icon: '✨' }
+      { label: 'Факты и детали (Сенсорика)', value: 'S', description: 'Опора на конкретные данные и опыт' },
+      { label: 'Смыслы и интуиция (Интуиция)', value: 'N', description: 'Поиск скрытых возможностей и идей' }
     ]
   },
   {
     id: 'tf',
     title: 'Как вы принимаете решения?',
     options: [
-      { label: 'Логика и анализ (Логика)', value: 'T', icon: '🧠' },
-      { label: 'Ценности и чувства (Этика)', value: 'F', icon: '❤️' }
+      { label: 'Логика и анализ (Логика)', value: 'T', description: 'Объективный расчет и структура' },
+      { label: 'Ценности и чувства (Этика)', value: 'F', description: 'Гармония отношений и эмоции' }
     ]
   },
   {
     id: 'jp',
     title: 'Как вы организуете жизнь?',
     options: [
-      { label: 'План и структура (Рациональность)', value: 'J', icon: '📅' },
-      { label: 'Гибкость и поток (Иррациональность)', value: 'P', icon: '🌊' }
+      { label: 'План и структура (Рациональность)', value: 'J', description: 'Порядок и завершенность действий' },
+      { label: 'Гибкость и поток (Иррациональность)', value: 'P', description: 'Адаптивность и спонтанность' }
     ]
   }
 ];
@@ -59,72 +60,68 @@ export const QuickTest = ({ onComplete }: { onComplete: (code: string) => void }
   const progress = ((step + 1) / DILEMMAS.length) * 100;
 
   return (
-    <div style={{ width: '100%', maxWidth: '400px' }}>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.8rem', opacity: 0.6 }}>
-          <span>Протокол Индукции</span>
-          <span>Шаг {step + 1} из 4</span>
+    <div className="w-full max-w-[440px] px-4 py-8 fade-in">
+      <div className="mb-8">
+        <div className="flex justify-between items-end mb-3">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black tracking-[0.2em] text-accent uppercase mb-1">Neural Induction</span>
+            <span className="text-xl font-black tracking-tight">PHASE_0{step + 1}</span>
+          </div>
+          <div className="text-right">
+            <span className="text-[10px] font-black opacity-30 tracking-widest uppercase">Progress</span>
+            <div className="text-sm font-black italic">{Math.round(progress)}%</div>
+          </div>
         </div>
-        <div style={{ height: '2px', background: 'rgba(255,255,255,0.1)', width: '100%', borderRadius: '10px', overflow: 'hidden' }}>
-          <div style={{ 
-            height: '100%', 
-            background: 'var(--accent)', 
-            width: `${progress}%`, 
-            transition: 'width 0.4s ease' 
-          }} />
+        <div className="h-1 bg-white/5 w-full rounded-full overflow-hidden">
+          <motion.div 
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            className="h-full bg-accent shadow-[0_0_10px_rgba(212,175,55,0.5)]"
+          />
         </div>
       </div>
 
-      <GlassCard>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', textAlign: 'center', fontWeight: 700, color: 'white' }}>
-          {currentDilemma.title}
-        </h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {currentDilemma.options.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => handleSelect(opt.value)}
-              className="glass"
-              style={{
-                padding: '1.2rem',
-                textAlign: 'left',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1.2rem',
-                transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '20px'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-                e.currentTarget.style.transform = 'scale(1.02)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
-            >
-              <div style={{ 
-                fontSize: '1.8rem', 
-                filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.2))' 
-              }}>
-                {opt.icon}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
-                <span style={{ fontWeight: 600, color: 'white', fontSize: '1rem' }}>{opt.label}</span>
-                <span style={{ fontSize: '0.75rem', opacity: 0.5, color: 'var(--ios-silver)' }}>
-                  Протокол: {opt.value}
-                </span>
-              </div>
-              <ArrowRight size={20} style={{ marginLeft: 'auto', opacity: 0.4, color: 'white' }} />
-            </button>
-          ))}
-        </div>
-      </GlassCard>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={step}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3 }}
+        >
+          <GlassCard className="p-8">
+            <h2 className="text-2xl font-black text-center mb-8 leading-tight uppercase italic tracking-tight">
+              {currentDilemma.title}
+            </h2>
+            <div className="flex flex-col gap-4">
+              {currentDilemma.options.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => handleSelect(opt.value)}
+                  className="w-full p-6 text-left glass-card hover:border-accent transition-all group flex items-center justify-between"
+                >
+                  <div className="flex flex-col gap-1">
+                    <span className="font-black text-lg tracking-tight group-hover:text-accent transition-colors italic">{opt.label}</span>
+                    <span className="text-[10px] uppercase font-bold text-white/40 tracking-wider">
+                      {opt.description}
+                    </span>
+                  </div>
+                  <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:border-accent group-hover:bg-accent/10 transition-all">
+                    <ArrowRight size={16} className="group-hover:text-accent" />
+                  </div>
+                </button>
+              ))}
+            </div>
+          </GlassCard>
+        </motion.div>
+      </AnimatePresence>
+      
+      <div className="mt-8 flex items-center justify-center gap-2 opacity-20">
+        <Zap size={12} className="text-accent" />
+        <span className="text-[8px] font-black tracking-[0.4em] uppercase">Processing neural signature</span>
+      </div>
     </div>
   );
 };
+
+export default QuickTest;

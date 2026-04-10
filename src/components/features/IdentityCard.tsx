@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { SHADOW_CODE_NAMES, TYPE_QUADRA, QUADRA_DATA } from '@/lib/shadowCode';
-import { Shield, Zap, QrCode, Scan } from 'lucide-react';
+import { Shield, Zap, QrCode, Scan, Lock, Target } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface IdentityCardProps {
   name: string;
@@ -21,207 +22,86 @@ export const IdentityCard: React.FC<IdentityCardProps> = ({ name, archetype, nex
   const accentColor = quadraInfo?.color || 'rgba(212, 175, 55, 1)';
 
   return (
-    <div 
-      className="identity-card-wrapper"
-      style={{
-        perspective: '1000px',
-        width: '100%',
-        maxWidth: '380px',
-        margin: '0 auto'
-      }}
-    >
-      <div 
-        className="identity-card"
+    <div className="w-full max-w-[380px] mx-auto [perspective:1000px]">
+      <motion.div 
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        style={{
-          background: 'rgba(255, 255, 255, 0.03)',
-          backdropFilter: 'blur(30px) saturate(200%)',
-          WebkitBackdropFilter: 'blur(30px) saturate(200%)',
-          border: `1px solid ${accentColor}40`,
-          borderRadius: '32px',
-          padding: '2.5rem 1.5rem',
-          position: 'relative',
-          overflow: 'hidden',
-          transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-          transform: isHovered ? 'rotateX(5deg) rotateY(-5deg) scale(1.02)' : 'rotateX(0) rotateY(0) scale(1)',
-          boxShadow: isHovered 
-            ? `0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 30px ${accentColor}30` 
-            : '0 20px 40px -15px rgba(0, 0, 0, 0.5)',
+        animate={{ 
+          rotateX: isHovered ? 5 : 0, 
+          rotateY: isHovered ? -5 : 0,
+          scale: isHovered ? 1.02 : 1
         }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        className="relative p-10 rounded-[40px] border border-white/10 bg-white/5 backdrop-blur-3xl overflow-hidden group"
+        style={{ borderColor: `${accentColor}40` }}
       >
-        {/* Animated Background Elements */}
-        <div style={{
-          position: 'absolute',
-          top: '-50%',
-          left: '-50%',
-          width: '200%',
-          height: '200%',
-          background: `radial-gradient(circle at center, ${accentColor}15 0%, transparent 50%)`,
-          animation: 'rotate-bg 15s infinite linear',
-          pointerEvents: 'none',
-          zIndex: 0
-        }} />
+        {/* Animated Background Pulse */}
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.1, 0.2, 0.1]
+          }}
+          transition={{ duration: 5, repeat: Infinity }}
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: `radial-gradient(circle at center, ${accentColor}40 0%, transparent 70%)` }}
+        />
 
-        {/* HUD Corners */}
-        <div className="hud-corner-tl" style={{ borderColor: accentColor }} />
-        <div className="hud-corner-tr" style={{ borderColor: accentColor }} />
-        <div className="hud-corner-bl" style={{ borderColor: accentColor }} />
-        <div className="hud-corner-br" style={{ borderColor: accentColor }} />
+        {/* HUD Grid Overlay */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:20px_20px]" />
 
-        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <div style={{ 
-            fontSize: '0.65rem', 
-            textTransform: 'uppercase', 
-            letterSpacing: '5px', 
-            opacity: 0.4, 
-            marginBottom: '1rem',
-            fontWeight: 900,
-            color: accentColor
-          }}>
-            Nexus Identity Card
+        {/* Tactical Corners */}
+        <div className="absolute top-8 left-8 w-6 h-6 border-t-2 border-l-2 opacity-30 group-hover:opacity-100 transition-opacity" style={{ borderColor: accentColor }} />
+        <div className="absolute top-8 right-8 w-6 h-6 border-t-2 border-r-2 opacity-30 group-hover:opacity-100 transition-opacity" style={{ borderColor: accentColor }} />
+        <div className="absolute bottom-10 left-8 w-6 h-6 border-b-2 border-l-2 opacity-30 group-hover:opacity-100 transition-opacity" style={{ borderColor: accentColor }} />
+        <div className="absolute bottom-10 right-8 w-6 h-6 border-b-2 border-r-2 opacity-30 group-hover:opacity-100 transition-opacity" style={{ borderColor: accentColor }} />
+
+        <div className="relative z-10 text-center space-y-8">
+          <div className="space-y-1">
+            <div className="text-[10px] font-black tracking-[0.5em] uppercase opacity-40 group-hover:opacity-100 transition-opacity" style={{ color: accentColor }}>
+              Nexus Identity
+            </div>
+            <h2 className="text-3xl font-black tracking-tighter text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+              {typeName.toUpperCase()}
+            </h2>
+            <div className="text-[10px] font-black tracking-[0.3em] opacity-30 flex items-center justify-center gap-2">
+              <div className="w-1 h-1 rounded-full bg-accent animate-pulse" />
+              PROTOCOL: {archetype}
+            </div>
           </div>
 
-          <div style={{ 
-            fontSize: '2.4rem', 
-            fontWeight: 900, 
-            lineHeight: 1,
-            marginBottom: '0.2rem',
-            color: 'white',
-            filter: `drop-shadow(0 0 15px ${accentColor}40)`
-          }}>
-            {typeName.toUpperCase()}
-          </div>
-          
-          <div style={{ 
-            fontSize: '0.85rem', 
-            opacity: 0.5, 
-            fontWeight: 700, 
-            letterSpacing: '2px',
-            marginBottom: '2rem'
-          }}>
-            PROTOCOL: {archetype}
-          </div>
-
-          {/* QR HUD Frame */}
-          <div style={{
-            width: '200px',
-            height: '200px',
-            margin: '0 auto 2rem',
-            padding: '12px',
-            background: 'rgba(255,255,255,0.02)',
-            border: `1px solid ${accentColor}20`,
-            borderRadius: '24px',
-            position: 'relative',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <div className="scan-line-qr" style={{ background: accentColor, boxShadow: `0 0 10px ${accentColor}` }} />
-            <div style={{
-              background: 'white',
-              padding: '10px',
-              borderRadius: '16px',
-              boxShadow: '0 0 20px rgba(0,0,0,0.5)'
-            }}>
+          {/* QR Interface */}
+          <div className="relative w-48 h-48 mx-auto p-4 rounded-3xl bg-white/5 border border-white/10 group/qr">
+            <div className="absolute inset-2 border border-accent/20 rounded-2xl pointer-events-none" />
+            <motion.div 
+              animate={{ top: ['10%', '90%', '10%'] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+              className="absolute left-4 right-4 h-[1px] shadow-[0_0_10px_#fff]"
+              style={{ background: accentColor, boxShadow: `0 0 15px ${accentColor}` }}
+            />
+            <div className="bg-white p-2.5 rounded-2xl shadow-2xl relative z-10 h-full w-full flex items-center justify-center overflow-hidden">
               <QRCodeCanvas 
                 value={qrValue} 
                 size={140} 
-                bgColor={"#ffffff"} 
-                fgColor={"#000000"} 
-                level={"H"}
+                level="H"
+                className="w-full h-full"
               />
-            </div>
-            
-            {/* Micro HUD info */}
-            <div style={{
-              position: 'absolute',
-              bottom: '-15px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: 'var(--background)',
-              padding: '2px 10px',
-              border: `1px solid ${accentColor}40`,
-              borderRadius: '20px',
-              fontSize: '0.6rem',
-              fontWeight: 800,
-              color: accentColor,
-              whiteSpace: 'nowrap'
-            }}>
-              NEURAL SIGNATURE ACTIVE
             </div>
           </div>
 
-          <div style={{ marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '1.2rem', fontWeight: 800, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              <Shield size={16} style={{ color: accentColor, opacity: 0.5 }} />
+          <div className="space-y-1">
+            <div className="text-xl font-black text-white flex items-center justify-center gap-2">
+              <Lock size={16} className="opacity-30" style={{ color: accentColor }} />
               {name}
-            </span>
-          </div>
-          <div style={{ 
-            fontSize: '0.7rem', 
-            opacity: 0.3, 
-            fontFamily: 'monospace',
-            letterSpacing: '1px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '4px'
-           }}>
-            <Scan size={10} /> AGENT_{nexusId.slice(0, 12).toUpperCase()}
+            </div>
+            <div className="text-[9px] font-black tracking-[0.2em] text-white/30 truncate px-4">
+              AGENT_{nexusId.toUpperCase()}
+            </div>
           </div>
         </div>
 
-        {/* Glass Reflection */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 40%, rgba(255,255,255,0.05) 100%)',
-          pointerEvents: 'none'
-        }} />
-      </div>
-
-      <style jsx>{`
-        .hud-corner-tl, .hud-corner-tr, .hud-corner-bl, .hud-corner-br {
-          position: absolute;
-          width: 20px;
-          height: 20px;
-          border-color: var(--ios-gold);
-          border-width: 2px;
-          opacity: 0.3;
-        }
-        .hud-corner-tl { top: 20px; left: 20px; border-top-style: solid; border-left-style: solid; }
-        .hud-corner-tr { top: 20px; right: 20px; border-top-style: solid; border-right-style: solid; }
-        .hud-corner-bl { bottom: 20px; left: 20px; border-bottom-style: solid; border-left-style: solid; }
-        .hud-corner-br { bottom: 20px; right: 20px; border-bottom-style: solid; border-right-style: solid; }
-
-        @keyframes rotate-bg {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        .scan-line-qr {
-          position: absolute;
-          left: 10px;
-          right: 10px;
-          height: 1px;
-          background: var(--ios-gold);
-          box-shadow: 0 0 10px var(--ios-gold);
-          z-index: 5;
-          animation: scanning-qr 4s infinite linear;
-          opacity: 0.5;
-        }
-
-        @keyframes scanning-qr {
-          0% { top: 10px; opacity: 0; }
-          10% { opacity: 0.5; }
-          90% { opacity: 0.5; }
-          100% { top: 190px; opacity: 0; }
-        }
-      `}</style>
+        {/* Gloss Effect */}
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/10 via-transparent to-transparent" />
+      </motion.div>
     </div>
   );
 };
