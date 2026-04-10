@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+﻿import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -6,7 +6,7 @@ export const maxDuration = 60; // Max allowed for Hobby plan
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || '');
 
-const SYSTEM_PROMPT = `
+const SYSTEM_PROMPT = \
 Ты — проводник в проект Shadow Code. Твоя задача — распознать «Теневой Код» (психотип) собеседника. Твой метод — через глубокий диалог.
 
 Правило 1: Никаких тестов с выбором ответа «или-или». Ты задаешь только открытые вопросы.
@@ -40,7 +40,7 @@ const SYSTEM_PROMPT = `
 Стиль Shadow Code (Nexus) — цифровой минимализм, премиальность, технологичность. Используй термины: Shadow Code, Карта Тени, Распознавание.
 
 ВАЖНО: Если ты готов выдать результат, начни сообщение с фразы "АНАЛИЗ ЗАВЕРШЕН. ВАШ ТЕНЕВОЙ КОД:".
-`;
+\;
 
 import { supabaseAdmin } from '@/lib/supabaseClient';
 
@@ -54,14 +54,14 @@ export async function POST(req: Request) {
     }
 
     const contextPrefix = initialHypothesis 
-      ? `ГИПОТЕЗА ИЗ БЫСТРОГО ТЕСТА: ${initialHypothesis}. Используй это как точку отсчета, но не принимай на веру. Проверь её в первую очередь.\n` 
+      ? \ГИПОТЕЗА ИЗ БЫСТРОГО ТЕСТА: \. Используй это как точку отсчета, но не принимай на веру. Проверь её в первую очередь.\\n\ 
       : '';
 
     const MODELS_TO_TRY = [
+      "gemini-2.0-flash", 
       "gemini-2.5-flash", 
-      "gemini-2.5-pro", 
-      "gemini-2.0-flash-lite-preview-02-05",
-      "gemini-2.0-flash"
+      "gemini-1.5-flash-latest",
+      "gemini-1.5-pro-latest"
     ];
     let text = "";
     let lastError = null;
@@ -103,24 +103,23 @@ export async function POST(req: Request) {
           const response = await result.response;
           text = response.text();
           
-          if (text) break; // Success!
+          if (text) break; 
         } catch (error: any) {
           lastError = error;
-          console.error(`Error with ${modelName} (retries left: ${retries}):`, error.message);
+          console.error(\Error with \ (retries left: \):\, error.message);
           
-          // Only retry on quota (429) or transient errors
           if (error.message?.includes('429') || error.message?.includes('500') || error.message?.includes('503')) {
             retries--;
             if (retries > 0) {
-              await new Promise(r => setTimeout(r, 1500)); // Wait 1.5s before retry
+              await new Promise(r => setTimeout(r, 1500)); 
               continue;
             }
           } else {
-            break; // Non-retryable error, try next model
+            break; 
           }
         }
       }
-      if (text) break; // If we got a result, stop trying models
+      if (text) break; 
     }
 
     if (!text) {
@@ -129,10 +128,9 @@ export async function POST(req: Request) {
 
     const isCompleted = text.includes('АНАЛИЗ ЗАВЕРШЕН');
     
-    // Persistence: Update session in Supabase if sessionId provided
     if (sessionId) {
       const updatedMessages = [...messages, { role: 'assistant', content: text }];
-      const resultArchetype = isCompleted ? (text.match(/ВАШ ТЕНЕВОЙ КОД: ([\wа-яА-ЯёЁ\s]+)/i)?.[1] || null) : null;
+      const resultArchetype = isCompleted ? (text.match(/ВАШ ТЕНЕВОЙ КОД: ([\\wа-яА-ЯёЁ\\s]+)/i)?.[1] || null) : null;
 
       const { data: sessionData, error: updateError } = await supabaseAdmin
         .from('induction_sessions')
@@ -151,10 +149,6 @@ export async function POST(req: Request) {
           .from('agents')
           .update({ archetype: resultArchetype })
           .eq('id', sessionData.agent_id);
-      }
-
-      if (updateError) {
-        console.error('Session update error:', updateError);
       }
     }
 
