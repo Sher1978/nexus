@@ -2,12 +2,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 56px;
-  padding: 0 2rem;
-  border-radius: 20px;
+  min-height: 50px;
+  padding: 0 1.5rem;
+  border-radius: 16px;
   font-family: 'Outfit', sans-serif;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.95rem;
   letter-spacing: -0.01em;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.15, 0, 0, 1);

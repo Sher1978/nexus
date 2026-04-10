@@ -3,8 +3,8 @@
   backdrop-filter: blur(var(--glass-blur)) saturate(180%);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
   border: 1px solid var(--glass-border);
-  border-radius: 28px;
-  padding: 1.5rem;
+  border-radius: 24px;
+  padding: 1.25rem;
   box-shadow: 
     0 10px 40px 0 rgba(0, 0, 0, 0.4),
     inset 0 0 0 1px var(--glass-highlight);

@@ -16,7 +16,7 @@ export const TopNav: React.FC<TopNavProps> = ({
   showBack = false 
 }) => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-[1100] h-[72px] flex items-center px-6 bg-black/40 backdrop-blur-[32px] border-b border-white/10">
+    <header className="fixed top-0 left-0 right-0 z-[1100] h-[64px] flex items-center px-6 bg-black/40 backdrop-blur-[32px] border-b border-white/10">
       <div className="flex-1 flex items-center gap-4">
         {showBack && (
           <motion.button
@@ -25,9 +25,9 @@ export const TopNav: React.FC<TopNavProps> = ({
             whileHover={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
             whileTap={{ scale: 0.92 }}
             onClick={onBack}
-            className="w-11 h-11 flex items-center justify-center rounded-[18px] bg-white/5 border border-white/10 shadow-xl backdrop-blur-sm"
+            className="w-10 h-10 flex items-center justify-center rounded-[14px] bg-white/5 border border-white/10 shadow-xl backdrop-blur-sm"
           >
-            <ChevronLeft size={26} className="text-white ml-[-2px]" />
+            <ChevronLeft size={22} className="text-white ml-[-2px]" />
           </motion.button>
         )}
         

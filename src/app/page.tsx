@@ -103,10 +103,10 @@ export default function Home() {
                   animate={{ width: '40px' }}
                   className="h-px bg-accent/50 mb-4"
                 />
-                <h1 className="text-6xl font-black tracking-tighter mb-2 italic">
+                <h1 className="text-5xl font-black tracking-tighter mb-2 italic">
                   NEXUS
                 </h1>
-                <div className="flex items-center gap-2 opacity-40 uppercase tracking-[0.3em] text-[8px] font-bold">
+                <div className="flex items-center gap-2 opacity-30 uppercase tracking-[0.25em] text-[7px] font-bold">
                   System Phase: <span className="text-accent">Stable</span>
                 </div>
               </div>
@@ -121,35 +121,35 @@ export default function Home() {
                     className="w-full"
                   >
                     <Link href="/induction" className="block w-full">
-                      <GlassCard className="p-0 border-accent/40 overflow-hidden hover:border-accent group transition-all duration-700 relative bg-accent/5 backdrop-blur-2xl">
-                        <div className="p-10 flex flex-col items-center text-center">
+                      <GlassCard className="p-0 border-accent/30 overflow-hidden hover:border-accent group transition-all duration-700 relative bg-accent/5 backdrop-blur-2xl">
+                        <div className="p-8 flex flex-col items-center text-center">
                            <motion.div 
                              animate={{ 
-                               boxShadow: ["0 0 20px rgba(var(--accent-rgb),0.2)", "0 0 40px rgba(var(--accent-rgb),0.5)", "0 0 20px rgba(var(--accent-rgb),0.2)"] 
+                               boxShadow: ["0 0 15px rgba(var(--accent-rgb),0.2)", "0 0 30px rgba(var(--accent-rgb),0.4)", "0 0 15px rgba(var(--accent-rgb),0.2)"] 
                              }}
                              transition={{ duration: 4, repeat: Infinity }}
-                             className="w-20 h-20 rounded-3xl bg-accent/20 flex items-center justify-center border border-accent/30 mb-8 group-hover:scale-105 transition-transform duration-700"
+                             className="w-16 h-16 rounded-2xl bg-accent/20 flex items-center justify-center border border-accent/25 mb-6 group-hover:scale-105 transition-transform duration-700"
                            >
-                             <Scan size={36} className="text-accent" />
+                             <Scan size={30} className="text-accent" />
                            </motion.div>
-                           <h3 className="text-4xl font-black uppercase tracking-tighter mb-3 group-hover:text-accent transition-colors italic">Индукция</h3>
-                           <p className="text-[11px] text-white/50 uppercase tracking-[0.3em] font-bold mb-10">
+                           <h3 className="text-3xl font-black uppercase tracking-tighter mb-2 group-hover:text-accent transition-colors italic">Индукция</h3>
+                           <p className="text-[10px] text-white/40 uppercase tracking-[0.25em] font-bold mb-8">
                              Architecture Identification
                            </p>
                            
-                           <div className="w-full flex justify-center gap-1.5 mb-10">
+                           <div className="w-full flex justify-center gap-1 mb-8">
                              {[...Array(5)].map((_, i) => (
                                <motion.div 
                                  key={i}
-                                 animate={{ opacity: [0.2, 1, 0.2] }}
+                                 animate={{ opacity: [0.2, 0.8, 0.2] }}
                                  transition={{ duration: 2, delay: i * 0.2, repeat: Infinity }}
-                                 className="w-1.5 h-1.5 rounded-full bg-accent" 
+                                 className="w-1 h-1 rounded-full bg-accent" 
                                />
                              ))}
                            </div>
                            
-                           <div className="flex items-center gap-3 text-accent font-black text-base uppercase tracking-[0.35em] py-4 px-8 rounded-2xl bg-accent/10 border border-accent/20 group-hover:bg-accent/20 transition-all">
-                             <Zap size={16} className="fill-accent" />
+                           <div className="flex items-center gap-2.5 text-accent font-black text-sm uppercase tracking-[0.3em] py-3.5 px-7 rounded-xl bg-accent/10 border border-accent/20 group-hover:bg-accent/20 transition-all">
+                             <Zap size={14} className="fill-accent" />
                              Начать процесс
                            </div>
                         </div>
@@ -229,7 +229,7 @@ export default function Home() {
         showBack={activeTab !== 'nexus'} 
         onBack={() => setActiveTab('nexus')} 
       />
-      <div className="w-full pt-24 pb-12 flex flex-col items-center">
+      <div className="w-full pt-20 pb-12 flex flex-col items-center">
         {loading ? (
           <div className="flex items-center justify-center min-h-[50vh]">
             <div className="w-16 h-16 rounded-full border-2 border-accent border-t-transparent animate-spin" />
