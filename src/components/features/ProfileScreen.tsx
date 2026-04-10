@@ -153,7 +153,28 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onScanClick }) => 
       </section>
 
       {/* Action Section */}
-      <section className="pt-4">
+      <section className="pt-4 space-y-4">
+        {/* Telegram Mirror Status */}
+        <GlassCard className="p-4 flex items-center justify-between bg-white/[0.02]">
+          <div className="flex items-center gap-3">
+            <div className={`w-2 h-2 rounded-full ${user?.telegram_id ? 'bg-[#0088cc] animate-pulse' : 'bg-white/20'}`} />
+            <div>
+              <div className="text-[10px] font-black text-white/40 uppercase tracking-widest">Bot Mirror</div>
+              <div className="text-xs font-bold">{user?.telegram_id ? 'SYNCED' : 'NOT LINKED'}</div>
+            </div>
+          </div>
+          {!user?.telegram_id && (
+            <Button 
+              variant="glass" 
+              size="sm"
+              onClick={() => window.open(`https://t.me/${process.env.NEXT_PUBLIC_BOT_USERNAME || 'NexusShadowBot'}?start=sync_${user?.id}`, '_blank')}
+              className="h-8 px-4 text-[10px] border-[#0088cc]/30 text-[#0088cc] hover:bg-[#0088cc]/10"
+            >
+              CONNECT
+            </Button>
+          )}
+        </GlassCard>
+
         <Button 
           variant="primary" 
           onClick={onScanClick}
