@@ -11,7 +11,21 @@ if (!isReady) {
   console.warn('Supabase credentials missing or invalid. Check your .env file.');
 }
 
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
 export const supabase = createClient(
   isReady ? supabaseUrl : 'https://placeholder.supabase.co',
   isReady ? supabaseAnonKey : 'placeholder-key'
+);
+
+// Admin client for backend operations (bypasses RLS)
+export const supabaseAdmin = createClient(
+  isReady ? supabaseUrl : 'https://placeholder.supabase.co',
+  supabaseServiceKey || (isReady ? supabaseAnonKey : 'placeholder-key'),
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
 );
