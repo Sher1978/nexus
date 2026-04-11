@@ -270,7 +270,7 @@ export default function ScanPage() {
         NEXUS_SYNC // END_TO_END_ENCRYPTION_ACTIVE
       </div>
 
-      <style jsx>{\`
+      <style jsx>{`
         .glitch-overlay {
           position: absolute;
           top: 0; left: 0; right: 0; bottom: 0;
@@ -320,7 +320,7 @@ export default function ScanPage() {
         /* html5-qrcode hidden elements */
         #reader__status_span { display: none !important; }
         video { object-fit: cover !important; }
-      \`}</style>
+      `}</style>
     </div>
   );
 }
