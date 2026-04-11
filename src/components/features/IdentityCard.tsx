@@ -15,7 +15,7 @@ interface IdentityCardProps {
 export const IdentityCard: React.FC<IdentityCardProps> = ({ name, archetype, nexusId }) => {
   const [isHovered, setIsHovered] = useState(false);
   const typeName = SHADOW_CODE_NAMES[archetype] || 'Unknown Agent';
-  const qrValue = `nexus:id:${nexusId}`;
+  const qrValue = `https://t.me/humanexusbot?start=inspect_${nexusId}`;
   
   const quadra = TYPE_QUADRA[archetype];
   const quadraInfo = quadra ? QUADRA_DATA[quadra] : null;

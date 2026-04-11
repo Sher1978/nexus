@@ -33,12 +33,22 @@ export default function Home() {
     
     if (supportsScanner) {
       webApp.showScanQrPopup({ text: 'Наведите камеру на код другого Агента' }, (data: string) => {
+        let finalUrl = '';
         if (data.startsWith('nexus:id:')) {
           const partnerId = data.replace('nexus:id:', '');
-          router.push(`/sync?partnerId=${partnerId}`);
+          finalUrl = `https://t.me/humanexusbot?start=scan_${partnerId}`;
+        } else if (data.includes('t.me/humanexusbot?start=')) {
+          finalUrl = data;
         } else {
-          router.push(`/sync?partnerId=${data}`);
+          // Fallback if it's just a raw ID
+          finalUrl = `https://t.me/humanexusbot?start=inspect_${data}`;
         }
+
+        if (finalUrl && webApp.openTelegramLink) {
+          webApp.openTelegramLink(finalUrl);
+          webApp.close(); // Optional: Close WebApp to show the bot chat immediately
+        }
+        
         webApp.closeScanQrPopup();
         return true;
       });

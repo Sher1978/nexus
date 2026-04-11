@@ -37,7 +37,7 @@ export async function GET(request: Request) {
             backgroundImage: 'radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000 100%)',
             color: '#fff',
             fontFamily: 'Inter, sans-serif',
-            padding: '40px',
+            padding: '20px',
             position: 'relative',
           }}
         >
@@ -48,75 +48,66 @@ export async function GET(request: Request) {
           <div
             style={{
               display: 'flex',
-              flexDirection: 'column',
-              width: '90%',
-              backgroundColor: 'rgba(15, 15, 25, 0.8)',
-              border: '2px solid rgba(0, 242, 255, 0.3)',
+              flexDirection: 'row',
+              width: '95%',
+              height: '90%',
+              backgroundColor: 'rgba(15, 15, 25, 0.9)',
+              border: '2px solid rgba(0, 242, 255, 0.4)',
               borderRadius: '40px',
-              padding: '40px',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+              padding: '0',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.8)',
               position: 'relative',
               overflow: 'hidden',
             }}
           >
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '14px', color: '#00f2ff', fontWeight: 'bold', letterSpacing: '2px' }}>SHADOW CODE // NEXUS</span>
-                <span style={{ fontSize: '32px', fontWeight: 'bold', color: '#fff' }}>IDENTITY CARD</span>
-              </div>
-              <div style={{ padding: '8px 16px', backgroundColor: 'rgba(0, 242, 255, 0.2)', borderRadius: '12px', border: '1px solid #00f2ff', fontSize: '12px', color: '#00f2ff', fontWeight: 'bold' }}>
-                V1.0.26
-              </div>
-            </div>
-
-            {/* Profile Info & QR Section */}
-            <div style={{ display: 'flex', gap: '30px', alignItems: 'center' }}>
-              {/* Photo Placeholder */}
-              <div style={{ width: '120px', height: '120px', borderRadius: '30px', backgroundColor: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: '60px', height: '60px', borderRadius: '50%', border: '4px solid #d4af37', opacity: 0.5 }} />
+            {/* Left Info Panel */}
+            <div style={{ display: 'flex', flexDirection: 'column', width: '55%', padding: '40px', borderRight: '1px solid rgba(0, 242, 255, 0.2)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '30px' }}>
+                <span style={{ fontSize: '12px', color: '#00f2ff', fontWeight: 'bold', letterSpacing: '3px' }}>SHADOW CODE // NEXUS</span>
+                <span style={{ fontSize: '28px', fontWeight: 'bold', color: '#fff' }}>IDENTITY CARD</span>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '15px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Agent Name</span>
-                  <span style={{ fontSize: '24px', fontWeight: 'bold' }}>{agent.full_name || 'REDACTED'}</span>
+                  <span style={{ fontSize: '22px', fontWeight: 'bold' }}>{agent.full_name || 'REDACTED'}</span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Archetype Cluster</span>
-                  <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#d4af37' }}>{agent.archetype || 'UNIDENTIFIED'}</span>
+                  <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#d4af37' }}>{agent.archetype || 'UNIDENTIFIED'}</span>
                 </div>
               </div>
 
-              {/* QR Code Section */}
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)' }}>NEURAL ID:</span>
+                <span style={{ fontSize: '12px', fontFamily: 'monospace', color: 'rgba(0, 242, 255, 0.6)' }}>{agent.id}</span>
+              </div>
+            </div>
+
+            {/* Right QR Panel - MAX VISIBILITY */}
+            <div style={{ width: '45%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.3)', position: 'relative' }}>
+              {/* Scan Brackets */}
+              <div style={{ position: 'absolute', top: '20px', left: '20px', width: '30px', height: '30px', borderTop: '4px solid #00f2ff', borderLeft: '4px solid #00f2ff' }} />
+              <div style={{ position: 'absolute', top: '20px', right: '20px', width: '30px', height: '30px', borderTop: '4px solid #00f2ff', borderRight: '4px solid #00f2ff' }} />
+              <div style={{ position: 'absolute', bottom: '20px', left: '20px', width: '30px', height: '30px', borderBottom: '4px solid #00f2ff', borderLeft: '4px solid #00f2ff' }} />
+              <div style={{ position: 'absolute', bottom: '20px', right: '20px', width: '30px', height: '30px', borderBottom: '4px solid #00f2ff', borderRight: '4px solid #00f2ff' }} />
+
               <div style={{ 
                 display: 'flex', 
                 flexDirection: 'column', 
                 alignItems: 'center', 
-                padding: '10px', 
+                padding: '12px', 
                 backgroundColor: '#fff', 
-                borderRadius: '16px',
-                border: '2px solid #00f2ff'
+                borderRadius: '24px',
+                boxShadow: '0 0 30px rgba(0, 242, 255, 0.5)'
               }}>
                 <img 
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`https://t.me/humanexusbot?start=inspect_${agent.id}`)}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`https://t.me/humanexusbot?start=inspect_${agent.id}`)}`}
                   alt="QR"
-                  style={{ width: '80px', height: '80px' }}
+                  style={{ width: '220px', height: '220px' }}
                 />
-                <span style={{ fontSize: '8px', color: '#000', fontWeight: 'bold', marginTop: '4px' }}>SCAN TO SYNC</span>
               </div>
-            </div>
-
-            {/* Footer / ID */}
-            <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)' }}>NEURAL ID PARSED:</span>
-                <span style={{ fontSize: '14px', fontFamily: 'monospace', color: 'rgba(0, 242, 255, 0.6)' }}>{agent.id}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#00FF94' }} />
-                <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#00FF94' }}>ACTIVE STATUS</span>
-              </div>
+              <span style={{ fontSize: '10px', color: '#00f2ff', fontWeight: 'bold', marginTop: '15px', letterSpacing: '2px' }}>NEURAL SCAN TARGET</span>
             </div>
           </div>
         </div>

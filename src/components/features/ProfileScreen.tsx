@@ -163,15 +163,13 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onScanClick }) => 
               <div className="text-xs font-bold">{user?.telegram_id ? 'SYNCED' : 'NOT LINKED'}</div>
             </div>
           </div>
-          {!user?.telegram_id && (
             <Button 
               variant="glass" 
-              onClick={() => window.open(`https://t.me/${process.env.NEXT_PUBLIC_BOT_USERNAME}?start=sync_${user?.id}`, '_blank')}
+              onClick={() => window.open(`https://t.me/humanexusbot?start=sync_${user?.id}`, '_blank')}
               className="h-8 px-4 text-[10px] border-[#0088cc]/30 text-[#0088cc] hover:bg-[#0088cc]/10"
             >
               CONNECT
             </Button>
-          )}
         </GlassCard>
 
         <Button 
