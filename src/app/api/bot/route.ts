@@ -5,7 +5,10 @@ import { SHADOW_CODE_NAMES, TYPE_QUADRA, QUADRA_DATA, getTacticalPartners, getPr
 import { SYNC_INSIGHTS } from '@/lib/mbtiSyncData';
 
 const token = process.env.TELEGRAM_BOT_TOKEN || '';
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://nexus-shers-projects-97eb3851.vercel.app';
+let APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://nexus-shers-projects-97eb3851.vercel.app';
+
+// Ensure APP_URL doesn't have a trailing slash for consistency
+if (APP_URL.endsWith('/')) APP_URL = APP_URL.slice(0, -1);
 
 let botInstance: Telegraf<any>;
 export const maxDuration = 60; 
@@ -155,6 +158,16 @@ function getBot() {
     );
   });
 
+  bot.on('text', async (ctx, next) => {
+    const messageText = ctx.message.text?.toLowerCase().trim() || '';
+    const MENU_TRIGGERS = ['меню', 'menu', 'профиль', 'profile', 'главная', 'home', '/start'];
+    
+    if (MENU_TRIGGERS.includes(messageText)) {
+      return sendMainMenu(ctx);
+    }
+    return next();
+  });
+
   bot.action('export_text', async (ctx) => {
     const { agent } = await getOrCreateAgent(ctx);
     const archetype = agent?.archetype || 'INITIATE';
@@ -240,14 +253,24 @@ function getBot() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages: [...session.conversation, { role: 'user', content: content || '[Audio]' }], audio: audioData, sessionId: session.id })
         });
+        
         const result = await profilerRes.json();
-        const safeResponse = (result.content || 'Error...').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        
+        if (!profilerRes.ok || result.error) {
+           throw new Error(result.error || `Profiler API returned ${profilerRes.status}`);
+        }
+
+        const safeResponse = (result.content || 'Error: Empty response from Nexus.').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         await bot.telegram.editMessageText(chatId, placeholderMsgId, undefined, result.isCompleted ? `✅ ${safeResponse}` : safeResponse, {
           parse_mode: 'HTML',
           ...Markup.inlineKeyboard([[Markup.button.callback('⏹ ПРЕРВАТЬ', 'cancel_induction')]])
         });
       } catch (e: any) {
-        await bot.telegram.editMessageText(chatId, placeholderMsgId, undefined, `❌ <b>ОШИБКА</b>\n${e.message}`, { parse_mode: 'HTML' });
+        console.error("Induction Error Details:", e);
+        await bot.telegram.editMessageText(chatId, placeholderMsgId, undefined, `❌ <b>ОШИБКА ДИАГНОСТИКИ</b>\n\n${e.message}\n\n<i>Попробуйте прервать процесс и начать заново.</i>`, { 
+          parse_mode: 'HTML',
+          ...Markup.inlineKeyboard([[Markup.button.callback('⏹ ПРЕРВАТЬ', 'cancel_induction')]])
+        });
       }
     });
   });
@@ -260,9 +283,17 @@ export async function POST(request: Request) {
   try {
     if (!token) return NextResponse.json({ ok: false }, { status: 500 });
     const body = await request.json();
+    
+    // Check if we need to update APP_URL from request headers if Vercel env is weird
+    const host = request.headers.get('host');
+    if (host && !process.env.NEXT_PUBLIC_APP_URL) {
+      APP_URL = `https://${host}`;
+    }
+
     await getBot().handleUpdate(body);
     return NextResponse.json({ ok: true });
   } catch (error: any) {
+    console.error("Bot POST Error:", error);
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
 }
@@ -272,7 +303,7 @@ export async function GET() {
     status: 'operational', 
     token_detected: !!token,
     app_url: APP_URL,
-    version: '1.1-stable',
+    version: '1.2-stable',
     build_id: new Date().toISOString()
   });
 }
